@@ -2,3 +2,4 @@ go/creature_types_srv/data/psql_data/
 .vscode/
 go/pkg/
 go/bin/
+go/creature_types_srv/bin
