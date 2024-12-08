@@ -1,7 +1,8 @@
 package logger
 
 import (
-	"dnd_encounter_builder/src/storage/settings"
+	settings_data "creature_types_srv/src/settings"
+	settings_manager "creature_types_srv/src/settings/implementations"
 	"log/slog"
 	"os"
 	"sync"
@@ -18,7 +19,7 @@ func GetInstance() *slog.Logger {
 	})
 	instance.Info(
 		"logger created",
-		settings.GetInstance().GetSettings().GetSlogGroup(),
+		settings_manager.GetInstance().GetSettings().GetSlogGroup(),
 	)
 	return instance
 }
@@ -26,18 +27,18 @@ func GetInstance() *slog.Logger {
 func setupLogger() *slog.Logger {
 	var log *slog.Logger
 
-	switch settings.GetInstance().GetSettings().Logger.EnvType {
-	case settings.EnvLocal:
+	switch settings_manager.GetInstance().GetSettings().Global.EnvType {
+	case settings_data.EnvLocal:
 		log = slog.New(
 			slog.NewTextHandler(
 				os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug},
 			))
-	case settings.EnvDev:
+	case settings_data.EnvDev:
 		log = slog.New(
 			slog.NewJSONHandler(
 				os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug},
 			))
-	case settings.EnvProd:
+	case settings_data.EnvProd:
 		log = slog.New(
 			slog.NewJSONHandler(
 				os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo},

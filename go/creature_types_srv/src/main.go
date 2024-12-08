@@ -1,11 +1,22 @@
 package main
 
 import (
-	"dnd_encounter_builder/src/logger"
-	"dnd_encounter_builder/src/storage/settings"
+	"creature_types_srv/src/controller"
+	"os"
 )
 
+type Exit struct{ Code int }
+
+func handleExit() {
+	if e := recover(); e != nil {
+		if exit, ok := e.(Exit); ok == true {
+			os.Exit(exit.Code)
+		}
+		panic(e)
+	}
+}
+
 func main() {
-	settings := settings.GetInstance().GetSettings()
-	logger.GetInstance().Info(settings.GetSlogGroup().String())
+	defer handleExit()
+	controller.Run()
 }
