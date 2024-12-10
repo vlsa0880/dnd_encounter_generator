@@ -18,3 +18,7 @@ mkdir -p bin && go build -C bin/ ../src/main.go && ./bin/main
 ```sh
 docker compose -f compose.yaml up --build --force-recreate --remove-orphans
 ```
+or
+```sh
+./compose_run.sh
+```

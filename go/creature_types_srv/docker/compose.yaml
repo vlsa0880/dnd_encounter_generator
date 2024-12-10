@@ -1,20 +1,23 @@
 services:
   web:
     image: tests/creature_types_service:latest
+    container_name: creature_types_service
     depends_on:
       postgres:
         condition: service_healthy
-    build: .
+    build:
+      context: ../
+      dockerfile: docker/builder/Dockerfile
     ports:
       - "8088:8088"
     env_file:
-      - local/env/.env
+      - env/.env
 
   postgres:
-    container_name: postgres_container
     image: postgres:17.2
+    container_name: postgres_container
     volumes:
-      - ./data/psql_data:/var/lib/postgresql/data
+      - ../data/psql_data:/var/lib/postgresql/data
     environment:
           POSTGRES_DB: "postgres"
           POSTGRES_USER: "postgres"
