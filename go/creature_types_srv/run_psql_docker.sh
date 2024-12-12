@@ -1,1 +1,1 @@
-docker run --rm -it -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=test -p 5432:5432 -v ./data/psql_data:/var/lib/postgresql/data --name postgresql postgres
+docker run --rm -it -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=test -p 5432:5432 -v ./data/psql_data:/var/lib/postgresql/data -u $(id -u):$(id -g) --name postgresql postgres
