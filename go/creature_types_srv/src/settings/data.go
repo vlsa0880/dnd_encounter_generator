@@ -21,6 +21,8 @@ type Data struct {
 }
 
 type Http struct {
+	Address string `json:"address" env:"ADDRESS, overwrite" default:"localhost"`
+	Port    string `json:"port" env:"PORT, overwrite" default:"8088"`
 }
 
 type CreatureTypes struct {

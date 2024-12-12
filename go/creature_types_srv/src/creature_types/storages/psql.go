@@ -26,7 +26,7 @@ func (manager *PsqlCreatureTypesManager) Init() error {
 	dsn := db_utils.DsnByEnv()
 	var err error
 	manager.db, err = gorm.Open(postgres.Open(*dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+		Logger: logger.Default.LogMode(logger.Silent),
 	})
 	if err != nil {
 		return err

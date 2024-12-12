@@ -1,4 +1,4 @@
-package data_handlers
+package idata_handler
 
 import "creature_types_srv/src/creature_types"
 

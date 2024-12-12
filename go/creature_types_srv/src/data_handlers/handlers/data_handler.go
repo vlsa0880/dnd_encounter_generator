@@ -1,4 +1,4 @@
-package data_handlers
+package handlers
 
 import (
 	"creature_types_srv/src/creature_types"
