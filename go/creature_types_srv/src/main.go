@@ -1,7 +1,7 @@
 package main
 
 import (
-	"creature_types_srv/src/controller"
+	"creature_types_srv/src/controllers"
 	"os"
 )
 
@@ -18,5 +18,6 @@ func handleExit() {
 
 func main() {
 	defer handleExit()
+	controller := controllers.Controller{}
 	controller.Run()
 }

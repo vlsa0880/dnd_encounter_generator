@@ -16,11 +16,11 @@ var (
 func GetInstance() *slog.Logger {
 	once.Do(func() {
 		instance = setupLogger()
+		instance.Info(
+			"logger created",
+			settings_manager.GetInstance().GetSettings().GetSlogGroup(),
+		)
 	})
-	instance.Info(
-		"logger created",
-		settings_manager.GetInstance().GetSettings().GetSlogGroup(),
-	)
 	return instance
 }
 

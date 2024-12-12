@@ -1,6 +1,7 @@
 package settings
 
 import (
+	"encoding/json"
 	"log/slog"
 
 	"github.com/creasty/defaults"
@@ -53,4 +54,20 @@ func (settings *Data) GetSlogGroup() slog.Attr {
 		slog.String("kafka.servers", settings.Kafka.Servers),
 		slog.String("kafka.update_creature_type_topic", settings.Kafka.UpdateCreatureTypesTopic),
 	)
+}
+
+func (settings *Data) String() string {
+	json, err := json.Marshal(settings)
+	if err != nil {
+		panic("Can't transform settings to string json")
+	}
+	return string(json)
+}
+
+func (settings *Data) PrettyJson() string {
+	json, err := json.MarshalIndent(settings, "", "	")
+	if err != nil {
+		panic("Can't transform settings to pretty json")
+	}
+	return string(json)
 }
