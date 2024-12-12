@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 var (
@@ -39,14 +40,15 @@ func setupLogger() *zap.Logger {
 			Development: true,
 			Encoding:    "json",
 			OutputPaths: []string{"stdout", "/tmp/logs"},
-			// EncoderConfig: zapcore.EncoderConfig{
-			// 	MessageKey:  "message",
-			// 	LevelKey:    "level",
-			// 	TimeKey:     "time",
-			// 	CallerKey:   "caller",
-			// 	EncodeTime:  zapcore.ISO8601TimeEncoder,
-			// 	EncodeLevel: zapcore.CapitalLevelEncoder,
-			// },
+			EncoderConfig: zapcore.EncoderConfig{
+				MessageKey:   "message",
+				LevelKey:     "level",
+				TimeKey:      "time",
+				EncodeTime:   zapcore.ISO8601TimeEncoder,
+				EncodeLevel:  zapcore.CapitalLevelEncoder,
+				CallerKey:    "caller",
+				EncodeCaller: zapcore.FullCallerEncoder,
+			},
 		}.Build()
 	case settings_data.EnvProd:
 		log, err = zap.NewProduction()
