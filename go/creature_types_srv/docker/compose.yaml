@@ -11,7 +11,7 @@ services:
     develop:
       watch:
         - action: rebuild
-          path: .
+          path: ./src
     ports:
       - "8088:8088"
     env_file:
