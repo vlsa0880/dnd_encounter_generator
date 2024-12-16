@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
-	"creature_types_srv/src/settings"
+	settings "creature_types_srv/src/settings/manager"
 	utils_db "creature_types_srv/src/utils/db"
 )
 

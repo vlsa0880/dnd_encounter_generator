@@ -39,6 +39,10 @@ type Global struct {
 	EnvType string `json:"env_type" env:"ENV_TYPE, overwrite" default:"dev"`
 }
 
+type ConfigLoader interface {
+	Load(key *string, target interface{}) error
+}
+
 func NewData() *Data {
 	data := &Data{}
 	if err := defaults.Set(data); err != nil {

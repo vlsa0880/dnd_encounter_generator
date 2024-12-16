@@ -9,7 +9,7 @@ type Exit struct{ Code int }
 
 func handleExit() {
 	if e := recover(); e != nil {
-		if exit, ok := e.(Exit); ok == true {
+		if exit, ok := e.(Exit); ok {
 			os.Exit(exit.Code)
 		}
 		panic(e)
@@ -18,6 +18,6 @@ func handleExit() {
 
 func main() {
 	defer handleExit()
-	controller := controllers.Controller{}
+	controller := controllers.New()
 	controller.Run()
 }

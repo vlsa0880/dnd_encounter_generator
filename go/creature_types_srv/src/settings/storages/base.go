@@ -1,7 +1,7 @@
 package storages
 
 import (
-	"creature_types_srv/src/settings"
+	settings "creature_types_srv/src/settings/manager"
 )
 
 type BaseSettingsManager struct {

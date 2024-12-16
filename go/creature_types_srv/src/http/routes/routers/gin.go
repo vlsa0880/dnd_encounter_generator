@@ -3,7 +3,7 @@ package routers
 import (
 	"creature_types_srv/src/data_handlers/idata_handler"
 	logger "creature_types_srv/src/logger/zap"
-	settings "creature_types_srv/src/settings/implementations"
+	settings "creature_types_srv/src/settings/manager/implementations"
 	"fmt"
 	"net/http"
 	"time"

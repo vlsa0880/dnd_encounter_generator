@@ -1,7 +1,7 @@
 package implementations
 
 import (
-	"creature_types_srv/src/settings"
+	settings "creature_types_srv/src/settings/manager"
 	"creature_types_srv/src/settings/storages"
 	"fmt"
 	"sync"

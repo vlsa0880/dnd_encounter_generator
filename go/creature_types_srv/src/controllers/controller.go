@@ -2,10 +2,11 @@ package controllers
 
 import (
 	data_handlers "creature_types_srv/src/data_handlers/handlers"
+	"creature_types_srv/src/data_handlers/idata_handler"
 	"creature_types_srv/src/http/routes/irouter"
 	"creature_types_srv/src/http/routes/routers"
 	logger "creature_types_srv/src/logger/zap"
-	"creature_types_srv/src/settings/implementations"
+	settings "creature_types_srv/src/settings/loader"
 
 	"go.uber.org/zap"
 )
@@ -14,32 +15,40 @@ type Controller struct {
 	router irouter.IRouter
 }
 
-func (controller *Controller) Run() {
-	settings := implementations.GetInstance().GetSettings()
-	logger.GetInstance().Info(settings.PrettyJson())
-	handler := &data_handlers.DataHandler{}
-	var err error
-	if err = handler.Init(); err != nil {
-		logger.GetInstance().Error(
-			"can't init data handler",
-			zap.String("error", err.Error()))
-		return
+func New() *Controller {
+	loader := settings.New()
+	if loader == nil {
+		return nil
 	}
+	var settings_loader settings.ISettingsLoader = loader
+
+	controller := Controller{}
+	handler := data_handlers.New(settings_loader)
+	if handler == nil {
+		logger.GetInstance().Error("can't create data handler")
+		return nil
+	}
+	var ihandler idata_handler.IDataHandler = handler
 	router_mgr := routers.GinManager{}
 	controller.router = &router_mgr
+	var err error
 	if err = controller.router.Init(); err != nil {
 		logger.GetInstance().Error(
 			"can't init router",
 			zap.String("err_msg", err.Error()),
 		)
-		return
+		return nil
 	}
-	if err = controller.router.SetupDataHandler(handler); err != nil {
+	if err = controller.router.SetupDataHandler(ihandler); err != nil {
 		logger.GetInstance().Error(
 			"can't setup data handler",
 			zap.String("err_msg", err.Error()),
 		)
-		return
+		return nil
 	}
+	return &controller
+}
+
+func (controller *Controller) Run() {
 	controller.router.Run()
 }

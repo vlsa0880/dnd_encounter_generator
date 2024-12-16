@@ -2,7 +2,7 @@ package storages
 
 import (
 	"context"
-	"creature_types_srv/src/settings"
+	settings "creature_types_srv/src/settings/manager"
 
 	"github.com/sethvargo/go-envconfig"
 )

@@ -1,8 +1,8 @@
 package logger
 
 import (
-	settings_data "creature_types_srv/src/settings"
-	settings_manager "creature_types_srv/src/settings/implementations"
+	settings_data "creature_types_srv/src/settings/manager"
+	settings_manager "creature_types_srv/src/settings/manager/implementations"
 	"log/slog"
 	"os"
 	"sync"
