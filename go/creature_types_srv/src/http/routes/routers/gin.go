@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -77,11 +78,14 @@ func (mgr *GinManager) setupMiddleware() {
 func setupLogger() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		t := time.Now()
+		traceID := uuid.New().String()
+		ctx.Set("traceID", traceID)
 
 		ctx.Next()
 
 		logger.GetInstance().Debug(
-			"request processing data",
+			"request processed data",
+			zap.String("traceID", traceID),
 			zap.Duration("processing_latency", time.Since(t)),
 			zap.Int("http_status", ctx.Writer.Status()),
 		)
