@@ -5,7 +5,6 @@ import (
 )
 
 type IRouter interface {
-	Init() error
 	Run()
 	SetupDataHandler(data_handler idata_handler.IDataHandler) error
 }

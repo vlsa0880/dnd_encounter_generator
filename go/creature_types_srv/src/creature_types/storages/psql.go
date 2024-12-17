@@ -9,9 +9,6 @@ import (
 	db_utils "creature_types_srv/src/utils/db"
 )
 
-// TODO: for shadow table updates
-// const c_tmp_table_name string = "tmp_creature_types"
-
 type PsqlCreatureTypesManager struct {
 	BaseCreatureTypeManager
 	db *gorm.DB

@@ -1,8 +1,9 @@
 package logger
 
 import (
-	settings_data "creature_types_srv/src/settings"
-	settings_manager "creature_types_srv/src/settings/implementations"
+	settings "creature_types_srv/src/settings/loader"
+	settings_data "creature_types_srv/src/settings/manager"
+	"fmt"
 	"sync"
 
 	"go.uber.org/zap"
@@ -14,24 +15,36 @@ var (
 	once     sync.Once
 )
 
-// TODO: get rid of strong cohesion
-// TODO: add interface for logger settings for loose coupling
+type Config struct {
+	Global struct {
+		EnvType string
+	}
+}
+
 func GetInstance() *zap.Logger {
-	once.Do(func() {
-		instance = setupLogger()
-		instance.Info(
-			"logger inited",
-			zap.String("settings", settings_manager.GetInstance().GetSettings().PrettyJson()),
-		)
-	})
+	if instance == nil {
+		panic("Logger doesn't initialised")
+	}
 	return instance
 }
 
-func setupLogger() *zap.Logger {
+func InitLogger(settings_loader settings.ISettingsLoader) {
+	once.Do(func() {
+		config := Config{}
+		if err := settings_loader.Load(&config); err != nil {
+			err_msg := fmt.Sprintf("Can't load logger config: %s", err)
+			panic(err_msg)
+		}
+		instance = setupLogger(&config)
+		instance.Info("logger inited")
+	})
+}
+
+func setupLogger(config *Config) *zap.Logger {
 	var log *zap.Logger
 
 	var err error
-	switch settings_manager.GetInstance().GetSettings().Global.EnvType {
+	switch config.Global.EnvType {
 	case settings_data.EnvLocal:
 		log, err = zap.NewDevelopment()
 	case settings_data.EnvDev:
@@ -53,7 +66,7 @@ func setupLogger() *zap.Logger {
 	case settings_data.EnvProd:
 		log, err = zap.NewProduction()
 	default:
-		log, err = zap.NewDevelopment()
+		panic("No environment type specified")
 	}
 
 	if err != nil {

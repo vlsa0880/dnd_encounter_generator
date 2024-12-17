@@ -19,5 +19,8 @@ func handleExit() {
 func main() {
 	defer handleExit()
 	controller := controllers.New()
+	if controller == nil {
+		panic("Can't create controller")
+	}
 	controller.Run()
 }

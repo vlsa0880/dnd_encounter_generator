@@ -3,7 +3,7 @@ package routers
 import (
 	"creature_types_srv/src/data_handlers/idata_handler"
 	logger "creature_types_srv/src/logger/zap"
-	settings "creature_types_srv/src/settings/manager/implementations"
+	settings "creature_types_srv/src/settings/loader"
 	"fmt"
 	"net/http"
 	"time"
@@ -12,22 +12,40 @@ import (
 	"go.uber.org/zap"
 )
 
-type GinManager struct {
-	router       *gin.Engine
-	data_handler idata_handler.IDataHandler
+type Config struct {
+	Http struct {
+		Address            string
+		Port               string
+		GetCreatureTypesEP string
+	}
 }
 
-func (mgr *GinManager) Init() error {
+type GinManager struct {
+	router      *gin.Engine
+	dataHandler idata_handler.IDataHandler
+	config      *Config
+}
+
+func New(settings_loader settings.ISettingsLoader) *GinManager {
+	mgr := GinManager{}
 	mgr.router = gin.Default()
 	mgr.setupMiddleware()
-	return nil
+	mgr.config = &Config{}
+	if err := settings_loader.Load(mgr.config); err != nil {
+		logger.GetInstance().Error(
+			"Error loading gin router config",
+			zap.String("msg", err.Error()),
+		)
+		return nil
+	}
+	return &mgr
 }
 
 func (mgr *GinManager) Run() {
-	if mgr.router == nil || mgr.data_handler == nil {
+	if mgr.router == nil || mgr.dataHandler == nil {
 		panic("Run Init() and SetupDataHandler() before Run()")
 	}
-	full_address := settings.GetInstance().GetSettings().Http.Address + ":" + settings.GetInstance().GetSettings().Http.Port
+	full_address := mgr.config.Http.Address + ":" + mgr.config.Http.Port
 	if err := mgr.router.Run(full_address); err != nil {
 		panic(err)
 	}
@@ -40,16 +58,16 @@ func (mgr *GinManager) SetupDataHandler(data_handler idata_handler.IDataHandler)
 	if data_handler == nil {
 		return fmt.Errorf("data handler is nil")
 	}
-	mgr.data_handler = data_handler
+	mgr.dataHandler = data_handler
 	mgr.router.GET(
-		settings.GetInstance().GetSettings().CreatureTypes.GetEndpoint,
+		mgr.config.Http.GetCreatureTypesEP,
 		mgr.setupGetCreatureTypes,
 	)
 	return nil
 }
 
 func (mgr *GinManager) setupGetCreatureTypes(gin_ctx *gin.Context) {
-	gin_ctx.IndentedJSON(http.StatusOK, mgr.data_handler.GetCreatureTypes())
+	gin_ctx.IndentedJSON(http.StatusOK, mgr.dataHandler.GetCreatureTypes())
 }
 
 func (mgr *GinManager) setupMiddleware() {

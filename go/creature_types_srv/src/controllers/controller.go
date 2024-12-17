@@ -22,6 +22,8 @@ func New() *Controller {
 	}
 	var settings_loader settings.ISettingsLoader = loader
 
+	logger.InitLogger(settings_loader)
+
 	controller := Controller{}
 	handler := data_handlers.New(settings_loader)
 	if handler == nil {
@@ -29,16 +31,14 @@ func New() *Controller {
 		return nil
 	}
 	var ihandler idata_handler.IDataHandler = handler
-	router_mgr := routers.GinManager{}
-	controller.router = &router_mgr
-	var err error
-	if err = controller.router.Init(); err != nil {
-		logger.GetInstance().Error(
-			"can't init router",
-			zap.String("err_msg", err.Error()),
-		)
+	router_mgr := routers.New(settings_loader)
+	if router_mgr == nil {
+		logger.GetInstance().Error("can't init router")
 		return nil
 	}
+	controller.router = router_mgr
+
+	var err error
 	if err = controller.router.SetupDataHandler(ihandler); err != nil {
 		logger.GetInstance().Error(
 			"can't setup data handler",
