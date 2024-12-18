@@ -1,6 +1,6 @@
 package creature_types
 
-type ICreatureTypeManager interface {
+type CreatureTypeManager interface {
 	Init() error
 	Load() error
 	GetData() Types

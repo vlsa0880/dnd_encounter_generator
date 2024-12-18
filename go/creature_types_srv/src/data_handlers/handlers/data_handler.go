@@ -18,7 +18,7 @@ type Config struct {
 }
 
 type DataHandler struct {
-	creature_types_mngr creature_types.ICreatureTypeManager
+	creature_types_mngr creature_types.CreatureTypeManager
 }
 
 func New(settings_loader settings.ISettingsLoader) *DataHandler {

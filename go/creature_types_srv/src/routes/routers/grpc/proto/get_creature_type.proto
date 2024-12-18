@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package creature_types;
+
+option go_package = "get_creature_types.v1;get_creature_typesv1";
+
+service DataHandler {
+    rpc GetCreatureTypes (GetRequest) returns (GetResponse);
+}
+
+message GetRequest {
+
+}
+
+message GetResponse {
+    repeated string creature_types = 1;
+}

@@ -1,7 +1,7 @@
-package routers
+package gin
 
 import (
-	"creature_types_srv/src/data_handlers/idata_handler"
+	"creature_types_srv/src/data_handlers/interfaces"
 	logger "creature_types_srv/src/logger/zap"
 	settings "creature_types_srv/src/settings/loader"
 	"fmt"
@@ -23,16 +23,15 @@ type Config struct {
 
 type GinManager struct {
 	router      *gin.Engine
-	dataHandler idata_handler.IDataHandler
-	config      *Config
+	dataHandler interfaces.DataHandler
+	config      Config
 }
 
 func New(settings_loader settings.ISettingsLoader) *GinManager {
 	mgr := GinManager{}
 	mgr.router = gin.Default()
 	mgr.setupMiddleware()
-	mgr.config = &Config{}
-	if err := settings_loader.Load(mgr.config); err != nil {
+	if err := settings_loader.Load(&mgr.config); err != nil {
 		logger.GetInstance().Error(
 			"Error loading gin router config",
 			zap.String("msg", err.Error()),
@@ -48,11 +47,15 @@ func (mgr *GinManager) Run() {
 	}
 	full_address := mgr.config.Http.Address + ":" + mgr.config.Http.Port
 	if err := mgr.router.Run(full_address); err != nil {
-		panic(err)
+		err_msg := fmt.Errorf("can't run gin: %s", err)
+		panic(err_msg)
 	}
 }
 
-func (mgr *GinManager) SetupDataHandler(data_handler idata_handler.IDataHandler) error {
+func (mgr *GinManager) Stop() {
+}
+
+func (mgr *GinManager) SetupDataHandler(data_handler interfaces.DataHandler) error {
 	if mgr.router == nil {
 		return fmt.Errorf("gin not inited - gin.Engine is nil")
 	}

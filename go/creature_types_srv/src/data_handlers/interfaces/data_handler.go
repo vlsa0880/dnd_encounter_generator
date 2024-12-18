@@ -1,7 +1,7 @@
-package idata_handler
+package interfaces
 
 import "creature_types_srv/src/creature_types"
 
-type IDataHandler interface {
+type DataHandler interface {
 	GetCreatureTypes() creature_types.Types
 }
