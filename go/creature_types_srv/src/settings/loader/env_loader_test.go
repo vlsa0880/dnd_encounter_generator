@@ -20,7 +20,8 @@ func TestEnvLoader_Load(t *testing.T) {
 		Test   Test
 		Var4   string
 		Test_2 struct {
-			Var5 string
+			Var5    string
+			VarVar6 []string
 		}
 	}
 
@@ -29,6 +30,7 @@ func TestEnvLoader_Load(t *testing.T) {
 	os.Setenv("TEST_VAR3", "true")
 	os.Setenv("VAR4", "test_value_2")
 	os.Setenv("TEST_2_VAR5", "test_value_3")
+	os.Setenv("TEST_2_VARVAR6", "arr_value1,arr_value2")
 
 	config := &TestConfig{}
 	err := loader.Load(config)
@@ -38,4 +40,5 @@ func TestEnvLoader_Load(t *testing.T) {
 	assert.Equal(t, true, config.Test.Var3)
 	assert.Equal(t, "test_value_2", config.Var4)
 	assert.Equal(t, "test_value_3", config.Test_2.Var5)
+	assert.Equal(t, []string{"arr_value1", "arr_value2"}, config.Test_2.VarVar6)
 }
