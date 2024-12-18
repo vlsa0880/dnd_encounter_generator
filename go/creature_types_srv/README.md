@@ -38,3 +38,12 @@ curl "0.0.0.0:8088/creature_data/types"
 ```sh
 curl "localhost:8088/creature_data/types"
 ```
+
+## GRPC
+### Recreate contracts
+[Install grpc](https://grpc.io/docs/languages/go/quickstart/)
+
+Recreate grpc go contracts
+```sh
+./gen_grpc.sh
+```
