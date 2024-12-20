@@ -5,7 +5,8 @@ import (
 	logger "creature_types_srv/src/logger/zap"
 	"creature_types_srv/src/routes/interfaces"
 	"creature_types_srv/src/routes/routers"
-	settings "creature_types_srv/src/settings/loader"
+	settings "creature_types_srv/src/settings/loader/env"
+	isettings "creature_types_srv/src/settings/loader/interfaces"
 	"fmt"
 	"os"
 	"os/signal"
@@ -23,7 +24,7 @@ func New() *Controller {
 	if loader == nil {
 		return nil
 	}
-	var settings_loader settings.ISettingsLoader = loader
+	var settings_loader isettings.SettingsLoader = loader
 
 	logger.InitLogger(settings_loader)
 

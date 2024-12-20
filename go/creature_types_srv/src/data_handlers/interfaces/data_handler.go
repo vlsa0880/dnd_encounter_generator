@@ -1,7 +1,10 @@
-package interfaces
+package data_handlers_interfaces
 
-import "creature_types_srv/src/creature_types"
+import (
+	"context"
+	creature_types "creature_types_srv/src/creature_types/data"
+)
 
 type DataHandler interface {
-	GetCreatureTypes() creature_types.Types
+	GetCreatureTypes(ctx context.Context) creature_types.Types
 }

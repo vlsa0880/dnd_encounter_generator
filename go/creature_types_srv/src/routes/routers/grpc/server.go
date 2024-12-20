@@ -1,10 +1,10 @@
 package grpc
 
 import (
-	"creature_types_srv/src/data_handlers/interfaces"
+	data_handlers_interfaces "creature_types_srv/src/data_handlers/interfaces"
 	logger "creature_types_srv/src/logger/zap"
 	"creature_types_srv/src/routes/routers/grpc/services"
-	settings "creature_types_srv/src/settings/loader"
+	settings "creature_types_srv/src/settings/loader/interfaces"
 
 	"context"
 	"fmt"
@@ -54,7 +54,7 @@ func (router *GRPCRouter) Run() {
 	}
 }
 
-func New(settingsLoader settings.ISettingsLoader) *GRPCRouter {
+func New(settingsLoader settings.SettingsLoader) *GRPCRouter {
 	if settingsLoader == nil {
 		panic("Bad settings loader")
 	}
@@ -98,7 +98,7 @@ func New(settingsLoader settings.ISettingsLoader) *GRPCRouter {
 	return &router
 }
 
-func (router *GRPCRouter) SetupDataHandler(data_handler interfaces.DataHandler) error {
+func (router *GRPCRouter) SetupDataHandler(data_handler data_handlers_interfaces.DataHandler) error {
 	if data_handler == nil {
 		panic("Bad data handler")
 	}

@@ -12,6 +12,10 @@ message GetRequest {
 
 }
 
+message CreatureType {
+    string RU = 1;
+}
+
 message GetResponse {
-    repeated string creature_types = 1;
+    repeated CreatureType creature_types = 1;
 }

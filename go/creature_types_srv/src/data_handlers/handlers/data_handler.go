@@ -1,9 +1,11 @@
-package handlers
+package data_handlers
 
 import (
-	"creature_types_srv/src/creature_types"
-	"creature_types_srv/src/creature_types/storages"
-	settings "creature_types_srv/src/settings/loader"
+	"context"
+	creature_types "creature_types_srv/src/creature_types/data"
+	storages "creature_types_srv/src/creature_types/storages/implementations"
+	creature_types_interfaces "creature_types_srv/src/creature_types/storages/interfaces"
+	settings "creature_types_srv/src/settings/loader/interfaces"
 
 	logger "creature_types_srv/src/logger/zap"
 
@@ -18,10 +20,10 @@ type Config struct {
 }
 
 type DataHandler struct {
-	creature_types_mngr creature_types.CreatureTypeManager
+	creature_types_mngr creature_types_interfaces.CreatureTypeManager
 }
 
-func New(settings_loader settings.ISettingsLoader) *DataHandler {
+func New(settings_loader settings.SettingsLoader) *DataHandler {
 	config := Config{}
 	var err error
 	if err = settings_loader.Load(&config); err != nil {
@@ -50,6 +52,6 @@ func New(settings_loader settings.ISettingsLoader) *DataHandler {
 	return &handler
 }
 
-func (handler *DataHandler) GetCreatureTypes() creature_types.Types {
+func (handler *DataHandler) GetCreatureTypes(ctx context.Context) creature_types.Types {
 	return handler.creature_types_mngr.GetData()
 }

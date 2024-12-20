@@ -1,9 +1,9 @@
 package gin
 
 import (
-	"creature_types_srv/src/data_handlers/interfaces"
+	data_handlers_interfaces "creature_types_srv/src/data_handlers/interfaces"
 	logger "creature_types_srv/src/logger/zap"
-	settings "creature_types_srv/src/settings/loader"
+	settings "creature_types_srv/src/settings/loader/interfaces"
 	"fmt"
 	"net/http"
 	"time"
@@ -23,11 +23,11 @@ type Config struct {
 
 type GinManager struct {
 	router      *gin.Engine
-	dataHandler interfaces.DataHandler
+	dataHandler data_handlers_interfaces.DataHandler
 	config      Config
 }
 
-func New(settings_loader settings.ISettingsLoader) *GinManager {
+func New(settings_loader settings.SettingsLoader) *GinManager {
 	mgr := GinManager{}
 	mgr.router = gin.Default()
 	mgr.setupMiddleware()
@@ -55,7 +55,7 @@ func (mgr *GinManager) Run() {
 func (mgr *GinManager) Stop() {
 }
 
-func (mgr *GinManager) SetupDataHandler(data_handler interfaces.DataHandler) error {
+func (mgr *GinManager) SetupDataHandler(data_handler data_handlers_interfaces.DataHandler) error {
 	if mgr.router == nil {
 		return fmt.Errorf("gin not inited - gin.Engine is nil")
 	}
@@ -71,7 +71,7 @@ func (mgr *GinManager) SetupDataHandler(data_handler interfaces.DataHandler) err
 }
 
 func (mgr *GinManager) setupGetCreatureTypes(gin_ctx *gin.Context) {
-	gin_ctx.IndentedJSON(http.StatusOK, mgr.dataHandler.GetCreatureTypes())
+	gin_ctx.IndentedJSON(http.StatusOK, mgr.dataHandler.GetCreatureTypes(gin_ctx))
 }
 
 func (mgr *GinManager) setupMiddleware() {

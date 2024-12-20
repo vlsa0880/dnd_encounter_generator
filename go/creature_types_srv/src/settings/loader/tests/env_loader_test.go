@@ -1,14 +1,16 @@
-package settings
+package tests
 
 import (
 	"os"
 	"testing"
 
+	settings "creature_types_srv/src/settings/loader/env"
+
 	"github.com/stretchr/testify/assert"
 )
 
 func TestEnvLoader_Load(t *testing.T) {
-	loader := New()
+	loader := settings.New()
 
 	type Test struct {
 		Var1 string

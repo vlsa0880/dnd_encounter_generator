@@ -1,11 +1,11 @@
-package storages
+package creature_types_storages
 
 import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
-	"creature_types_srv/src/creature_types"
+	creature_types "creature_types_srv/src/creature_types/data"
 	db_utils "creature_types_srv/src/utils/db"
 )
 
@@ -44,12 +44,12 @@ func (manager *PsqlCreatureTypesManager) Load() error {
 	return nil
 }
 
-func (manager *PsqlCreatureTypesManager) fill(data []CreatureTypesData) {
+func (manager *PsqlCreatureTypesManager) fill(creature_types_data []CreatureTypesData) {
 	manager.creature_types = make(
 		creature_types.Types,
-		len(data),
+		len(creature_types_data),
 	)
-	for index, creature_type := range data {
+	for index, creature_type := range creature_types_data {
 		manager.creature_types[index] = creature_type.Type
 	}
 }

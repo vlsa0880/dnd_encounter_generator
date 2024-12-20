@@ -3,7 +3,7 @@ package routers
 import (
 	logger "creature_types_srv/src/logger/zap"
 	"creature_types_srv/src/routes/interfaces"
-	settings "creature_types_srv/src/settings/loader"
+	settings "creature_types_srv/src/settings/loader/interfaces"
 	"fmt"
 
 	"creature_types_srv/src/routes/routers/gin"
@@ -18,7 +18,7 @@ type Config struct {
 	}
 }
 
-func New(settings_loader settings.ISettingsLoader) []interfaces.Router {
+func New(settings_loader settings.SettingsLoader) []interfaces.Router {
 	if settings_loader == nil {
 		return []interfaces.Router{}
 	}

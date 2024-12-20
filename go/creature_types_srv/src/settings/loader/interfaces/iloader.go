@@ -1,5 +1,5 @@
 package settings
 
-type ISettingsLoader interface {
+type SettingsLoader interface {
 	Load(target interface{}) error
 }

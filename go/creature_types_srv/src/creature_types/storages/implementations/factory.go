@@ -1,7 +1,7 @@
-package storages
+package creature_types_storages
 
 import (
-	"creature_types_srv/src/creature_types"
+	creature_types "creature_types_srv/src/creature_types/storages/interfaces"
 )
 
 func New(storage_type *string) creature_types.CreatureTypeManager {

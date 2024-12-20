@@ -1,4 +1,4 @@
-package creature_types
+package creature_types_data
 
 import (
 	logger "creature_types_srv/src/logger/zap"

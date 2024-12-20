@@ -1,7 +1,7 @@
-package logger
+package zap_logger
 
 import (
-	settings "creature_types_srv/src/settings/loader"
+	settings "creature_types_srv/src/settings/loader/interfaces"
 	settings_data "creature_types_srv/src/settings/manager"
 	"fmt"
 	"sync"
@@ -28,7 +28,7 @@ func GetInstance() *zap.Logger {
 	return instance
 }
 
-func InitLogger(settings_loader settings.ISettingsLoader) {
+func InitLogger(settings_loader settings.SettingsLoader) {
 	once.Do(func() {
 		config := Config{}
 		if err := settings_loader.Load(&config); err != nil {
