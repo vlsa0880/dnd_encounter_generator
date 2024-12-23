@@ -3,3 +3,4 @@ go/creature_types_srv/data/psql_data/
 go/pkg/
 go/bin/
 go/creature_types_srv/bin
+go/grpc_clients/creature_types/bin
