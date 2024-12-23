@@ -1,7 +1,7 @@
 package storages
 
 import (
-	"creature_types_srv/src/utils/env"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/utils/env"
 )
 
 func CreateSettingsManager() interface{} {

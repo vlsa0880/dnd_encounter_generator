@@ -1,16 +1,17 @@
 package controllers
 
 import (
-	data_handlers "creature_types_srv/src/data_handlers/handlers"
-	logger "creature_types_srv/src/logger/zap"
-	"creature_types_srv/src/routes/interfaces"
-	"creature_types_srv/src/routes/routers"
-	settings "creature_types_srv/src/settings/loader/env"
-	isettings "creature_types_srv/src/settings/loader/interfaces"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
+
+	data_handlers "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/data_handlers/handlers"
+	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/interfaces"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers"
+	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/env"
+	isettings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
 )
 
 type RouterProcess func(router interfaces.Router)

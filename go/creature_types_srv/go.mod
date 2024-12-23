@@ -1,4 +1,4 @@
-module creature_types_srv
+module github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv
 
 go 1.23.2
 

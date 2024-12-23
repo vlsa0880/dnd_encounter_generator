@@ -1,13 +1,14 @@
 package routers
 
 import (
-	logger "creature_types_srv/src/logger/zap"
-	"creature_types_srv/src/routes/interfaces"
-	settings "creature_types_srv/src/settings/loader/interfaces"
 	"fmt"
 
-	"creature_types_srv/src/routes/routers/gin"
-	"creature_types_srv/src/routes/routers/grpc"
+	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/interfaces"
+	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
+
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers/gin"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers/grpc"
 
 	"go.uber.org/zap"
 )

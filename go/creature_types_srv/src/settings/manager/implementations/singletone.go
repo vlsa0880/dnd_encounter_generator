@@ -1,10 +1,11 @@
 package implementations
 
 import (
-	settings "creature_types_srv/src/settings/manager"
-	"creature_types_srv/src/settings/storages"
 	"fmt"
 	"sync"
+
+	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/manager"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/storages"
 )
 
 var (

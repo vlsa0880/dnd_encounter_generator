@@ -1,8 +1,9 @@
 package main
 
 import (
-	"creature_types_srv/src/controllers"
 	"os"
+
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/controllers"
 )
 
 type Exit struct{ Code int }

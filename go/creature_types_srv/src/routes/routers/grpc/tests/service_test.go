@@ -10,9 +10,9 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	data_handlers_tests "creature_types_srv/src/data_handlers/tests"
-	gen "creature_types_srv/src/routes/routers/grpc/gen"
-	"creature_types_srv/src/routes/routers/grpc/services"
+	data_handlers_tests "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/data_handlers/tests"
+	gen "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers/grpc/gen"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers/grpc/services"
 )
 
 func TestGetCreatureTypes_GRPCCall(t *testing.T) {

@@ -10,8 +10,8 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
-	settings "creature_types_srv/src/settings/manager"
-	utils_db "creature_types_srv/src/utils/db"
+	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/manager"
+	utils_db "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/utils/db"
 )
 
 type PsqlJSONB struct {

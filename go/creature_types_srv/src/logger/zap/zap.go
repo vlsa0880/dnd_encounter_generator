@@ -1,10 +1,11 @@
 package zap_logger
 
 import (
-	settings "creature_types_srv/src/settings/loader/interfaces"
-	settings_data "creature_types_srv/src/settings/manager"
 	"fmt"
 	"sync"
+
+	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
+	settings_data "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/manager"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"

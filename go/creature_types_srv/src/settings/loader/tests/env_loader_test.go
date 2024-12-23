@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	settings "creature_types_srv/src/settings/loader/env"
+	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/env"
 
 	"github.com/stretchr/testify/assert"
 )

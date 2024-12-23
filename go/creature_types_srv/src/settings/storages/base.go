@@ -1,7 +1,7 @@
 package storages
 
 import (
-	settings "creature_types_srv/src/settings/manager"
+	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/manager"
 )
 
 type BaseSettingsManager struct {

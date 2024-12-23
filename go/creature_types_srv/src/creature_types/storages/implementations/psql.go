@@ -5,8 +5,8 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
-	creature_types "creature_types_srv/src/creature_types/data"
-	db_utils "creature_types_srv/src/utils/db"
+	creature_types "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/creature_types/data"
+	db_utils "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/utils/db"
 )
 
 type PsqlCreatureTypesManager struct {

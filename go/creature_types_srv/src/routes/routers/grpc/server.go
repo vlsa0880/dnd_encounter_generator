@@ -1,10 +1,10 @@
 package grpc
 
 import (
-	data_handlers_interfaces "creature_types_srv/src/data_handlers/interfaces"
-	logger "creature_types_srv/src/logger/zap"
-	"creature_types_srv/src/routes/routers/grpc/services"
-	settings "creature_types_srv/src/settings/loader/interfaces"
+	data_handlers_interfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/data_handlers/interfaces"
+	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers/grpc/services"
+	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
 
 	"context"
 	"fmt"

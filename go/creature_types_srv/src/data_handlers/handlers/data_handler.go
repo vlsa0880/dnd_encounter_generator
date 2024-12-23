@@ -2,12 +2,13 @@ package data_handlers
 
 import (
 	"context"
-	creature_types "creature_types_srv/src/creature_types/data"
-	storages "creature_types_srv/src/creature_types/storages/implementations"
-	creature_types_interfaces "creature_types_srv/src/creature_types/storages/interfaces"
-	settings "creature_types_srv/src/settings/loader/interfaces"
 
-	logger "creature_types_srv/src/logger/zap"
+	creature_types "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/creature_types/data"
+	storages "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/creature_types/storages/implementations"
+	creature_types_interfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/creature_types/storages/interfaces"
+	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
+
+	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 
 	"go.uber.org/zap"
 )

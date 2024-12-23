@@ -1,11 +1,12 @@
 package logger
 
 import (
-	settings_data "creature_types_srv/src/settings/manager"
-	settings_manager "creature_types_srv/src/settings/manager/implementations"
 	"log/slog"
 	"os"
 	"sync"
+
+	settings_data "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/manager"
+	settings_manager "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/manager/implementations"
 )
 
 var (
