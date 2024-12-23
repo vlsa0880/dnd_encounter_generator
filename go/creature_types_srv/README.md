@@ -47,3 +47,18 @@ Recreate grpc go contracts
 ```sh
 ./gen_grpc.sh
 ```
+
+### Run separated client
+```sh
+cd ../grpc_clients/creature_types/
+```
+
+After running docker compose & grpc server started:
+```sh
+mkdir -p bin && go build -o bin/client src/main.go && ./run_client_docker.sh
+```
+
+Or localy, after running psql & get_creature_srv:
+```sh
+mkdir -p bin && go build -o bin/client src/main.go && ./run_client_localy.sh
+```
