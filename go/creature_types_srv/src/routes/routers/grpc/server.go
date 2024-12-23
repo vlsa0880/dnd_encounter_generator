@@ -1,9 +1,7 @@
 package grpc
 
 import (
-	data_handlers_interfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/data_handlers/interfaces"
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
-	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers/grpc/services"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
 
 	"context"
@@ -19,7 +17,7 @@ import (
 )
 
 type GRPCRouter struct {
-	server *grpc.Server
+	Server *grpc.Server
 	config Config
 }
 
@@ -31,7 +29,7 @@ type Config struct {
 }
 
 func (router *GRPCRouter) Run() {
-	if router.server == nil {
+	if router.Server == nil {
 		panic("bad grpc server")
 	}
 	listener, err := net.Listen(
@@ -48,13 +46,13 @@ func (router *GRPCRouter) Run() {
 		zap.String("addr", listener.Addr().String()),
 	)
 
-	if err := router.server.Serve(listener); err != nil {
+	if err := router.Server.Serve(listener); err != nil {
 		err_msg := fmt.Errorf("can't create start grpc server: %s", err)
 		panic(err_msg)
 	}
 }
 
-func New(settingsLoader settings.SettingsLoader) *GRPCRouter {
+func NewServer(settingsLoader settings.SettingsLoader) *GRPCRouter {
 	if settingsLoader == nil {
 		panic("Bad settings loader")
 	}
@@ -83,7 +81,7 @@ func New(settingsLoader settings.SettingsLoader) *GRPCRouter {
 		loggingOpts...)
 
 	router := GRPCRouter{}
-	router.server = grpc.NewServer(
+	router.Server = grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			recovery.UnaryServerInterceptor(recoveryOpts...),
 			log_interceptor,
@@ -98,23 +96,15 @@ func New(settingsLoader settings.SettingsLoader) *GRPCRouter {
 	return &router
 }
 
-func (router *GRPCRouter) SetupDataHandler(data_handler data_handlers_interfaces.DataHandler) error {
-	if data_handler == nil {
-		panic("Bad data handler")
-	}
-	services.New(router.server, data_handler)
-	return nil
-}
-
 func (router *GRPCRouter) Stop() {
-	if router.server == nil {
+	if router.Server == nil {
 		return
 	}
 	logger.GetInstance().Info(
 		"stopping grpc server",
 		zap.String("address", router.config.GRPC.Address),
 	)
-	router.server.GracefulStop()
+	router.Server.GracefulStop()
 }
 
 func interceptorLogger(zap_log *zap.Logger) logging.Logger {

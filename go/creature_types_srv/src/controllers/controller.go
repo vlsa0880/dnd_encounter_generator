@@ -41,7 +41,7 @@ func New() *Controller {
 		panic("no routers created - check env")
 	}
 	controller.forEach(func(router interfaces.Router) {
-		if err := router.SetupDataHandler(handler); err != nil {
+		if err := router.Init(handler); err != nil {
 			err_msg := fmt.Errorf("can't setup data handler: %s", err)
 			panic(err_msg)
 		}
