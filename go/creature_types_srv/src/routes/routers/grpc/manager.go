@@ -9,13 +9,13 @@ import (
 )
 
 type Manager struct {
-	server      *GRPCRouter
+	router      *GRPCRouter
 	dataHandler data_handlers_interfaces.DataHandler
 }
 
 func New(settingsLoader settings.SettingsLoader) *Manager {
 	var manager Manager
-	manager.server = NewServer(settingsLoader)
+	manager.router = NewServer(settingsLoader)
 	return &manager
 }
 
@@ -24,7 +24,7 @@ func (manager *Manager) Run() {
 		err_msg := fmt.Sprintf("Can't run grpc server: %s", err)
 		panic(err_msg)
 	}
-	manager.server.Run()
+	manager.router.Run()
 }
 
 func (manager *Manager) Stop() {
@@ -32,10 +32,10 @@ func (manager *Manager) Stop() {
 		err_msg := fmt.Sprintf("Can't stop grpc server: %s", err)
 		panic(err_msg)
 	}
-	manager.server.Stop()
+	manager.router.Stop()
 }
 
-func (manager *Manager) Init(dataHandler data_handlers_interfaces.DataHandler) error {
+func (manager *Manager) SetupDataHandler(dataHandler data_handlers_interfaces.DataHandler) error {
 	if dataHandler == nil {
 		return fmt.Errorf("Data handler is nil")
 	}
@@ -47,12 +47,12 @@ func (manager *Manager) Init(dataHandler data_handlers_interfaces.DataHandler) e
 func (manager *Manager) isValid() error {
 	if manager.dataHandler == nil {
 		return fmt.Errorf("Data handler is nil")
-	} else if manager.server.Server == nil {
+	} else if manager.router.Server == nil {
 		return fmt.Errorf("Grpc server is nil")
 	}
 	return nil
 }
 
 func (manager *Manager) registerHandlers() {
-	services.New(manager.server.Server, manager.dataHandler)
+	services.New(manager.router.Server, manager.dataHandler)
 }

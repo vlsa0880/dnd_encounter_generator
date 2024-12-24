@@ -56,7 +56,7 @@ func (mgr *GinManager) Run() {
 func (mgr *GinManager) Stop() {
 }
 
-func (mgr *GinManager) Init(data_handler data_handlers_interfaces.DataHandler) error {
+func (mgr *GinManager) SetupDataHandler(data_handler data_handlers_interfaces.DataHandler) error {
 	if mgr.router == nil {
 		return fmt.Errorf("gin not inited - gin.Engine is nil")
 	}

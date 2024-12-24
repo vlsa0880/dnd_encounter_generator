@@ -8,16 +8,16 @@ import (
 
 	data_handlers "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/data_handlers/handlers"
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
-	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/interfaces"
+	routes_interfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/interfaces"
 	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/env"
 	isettings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
 )
 
-type RouterProcess func(router interfaces.Router)
+type RouterProcess func(router routes_interfaces.Router)
 
 type Controller struct {
-	routers []interfaces.Router
+	routers []routes_interfaces.Router
 }
 
 func New() *Controller {
@@ -40,8 +40,8 @@ func New() *Controller {
 	if len(controller.routers) < 1 {
 		panic("no routers created - check env")
 	}
-	controller.forEach(func(router interfaces.Router) {
-		if err := router.Init(handler); err != nil {
+	controller.forEach(func(router routes_interfaces.Router) {
+		if err := router.SetupDataHandler(handler); err != nil {
 			err_msg := fmt.Errorf("can't setup data handler: %s", err)
 			panic(err_msg)
 		}
@@ -51,11 +51,11 @@ func New() *Controller {
 }
 
 func (controller *Controller) Run() {
-	controller.forEach(func(router interfaces.Router) { go router.Run() })
+	controller.forEach(func(router routes_interfaces.Router) { go router.Run() })
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
 	<-stop
-	controller.forEach(func(router interfaces.Router) { go router.Stop() })
+	controller.forEach(func(router routes_interfaces.Router) { go router.Stop() })
 }
 
 func (controller *Controller) forEach(processer RouterProcess) {
