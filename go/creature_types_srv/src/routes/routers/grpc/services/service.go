@@ -25,7 +25,9 @@ func New(gRPCServer *grpc.Server, handler data_handlers_interfaces.DataHandler) 
 func (server *serverAPI) GetCreatureTypes(ctx context.Context, req *gen.GetRequest) (*gen.GetResponse, error) {
 	resp := gen.GetResponse{}
 	for _, creature_type := range server.data_handler.GetCreatureTypes(ctx) {
-		resp.CreatureTypes = append(resp.CreatureTypes, &gen.CreatureType{RU: creature_type.RU})
+		resp.CreatureTypes = append(
+			resp.CreatureTypes,
+			&gen.CreatureType{Name: creature_type.Name})
 	}
 	return &resp, nil
 }

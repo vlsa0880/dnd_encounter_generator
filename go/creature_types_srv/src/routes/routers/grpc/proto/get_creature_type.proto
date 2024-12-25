@@ -13,7 +13,7 @@ message GetRequest {
 }
 
 message CreatureType {
-    string RU = 1;
+    string Name = 1;
 }
 
 message GetResponse {

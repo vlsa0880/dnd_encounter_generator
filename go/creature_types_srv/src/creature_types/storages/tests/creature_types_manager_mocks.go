@@ -15,7 +15,7 @@ func (mock *CreatureTypeManagerMockValid) Load() error {
 
 func (mock *CreatureTypeManagerMockValid) GetData() creature_types.Types {
 	return creature_types.Types{
-		creature_types.Type{RU: "тест1"},
-		creature_types.Type{RU: "тест2"},
+		creature_types.Type{Name: "тест1"},
+		creature_types.Type{Name: "тест2"},
 	}
 }

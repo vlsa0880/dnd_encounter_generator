@@ -7,13 +7,13 @@ import (
 )
 
 type Type struct {
-	RU string
+	Name string
 }
 
 type Types []Type
 
 func (creature_type *Type) String() string {
-	return creature_type.RU
+	return creature_type.Name
 }
 
 func (types Types) String() string {

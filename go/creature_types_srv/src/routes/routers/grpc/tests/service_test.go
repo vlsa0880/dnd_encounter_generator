@@ -60,6 +60,6 @@ func TestGetCreatureTypes_GRPCCall(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, resp)
 	for index, creature_type_resp := range resp.CreatureTypes {
-		assert.Equal(t, creature_type_resp.RU, expected_data[index].RU)
+		assert.Equal(t, creature_type_resp.Name, expected_data[index].Name)
 	}
 }
