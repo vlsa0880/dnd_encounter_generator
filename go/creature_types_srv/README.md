@@ -62,3 +62,8 @@ Or localy, after running psql & get_creature_srv:
 ```sh
 mkdir -p bin && go build -o bin/client src/main.go && ./run_client_localy.sh
 ```
+
+## Tests run
+```sh
+go test -v ./src/...
+```
