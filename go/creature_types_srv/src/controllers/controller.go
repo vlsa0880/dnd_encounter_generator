@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/signal"
@@ -17,7 +18,9 @@ import (
 type RouterProcess func(router routes_interfaces.Router)
 
 type Controller struct {
-	routers []routes_interfaces.Router
+	ctx       context.Context
+	ctxCancel context.CancelFunc
+	routers   []routes_interfaces.Router
 }
 
 func New() *Controller {
@@ -36,7 +39,8 @@ func New() *Controller {
 	}
 
 	controller := Controller{}
-	controller.routers = routers.New(settings_loader)
+	controller.ctx, controller.ctxCancel = context.WithCancel(context.Background())
+	controller.routers = routers.New(controller.ctx, settings_loader)
 	if len(controller.routers) < 1 {
 		panic("no routers created - check env")
 	}
@@ -51,6 +55,7 @@ func New() *Controller {
 }
 
 func (controller *Controller) Run() {
+	defer controller.ctxCancel()
 	controller.forEach(func(router routes_interfaces.Router) { go router.Run() })
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)

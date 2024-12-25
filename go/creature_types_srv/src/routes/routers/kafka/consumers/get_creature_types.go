@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/segmentio/kafka-go"
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
-	kafka_interfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers/kafka/interfaces"
+	kafkaInterfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers/kafka/interfaces"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
 )
 
@@ -24,13 +24,13 @@ type Config struct {
 
 type GetCreatureType struct {
 	reader     *kafka.Reader
-	msgHandler kafka_interfaces.MsgHandler
+	msgHandler kafkaInterfaces.MsgHandler
 	Config     Config
 	ctx        context.Context
 	cancel     context.CancelFunc
 }
 
-func New(ctx context.Context, settings_loader settings.SettingsLoader) *GetCreatureType {
+func NewGetCreatureType(ctx context.Context, settings_loader settings.SettingsLoader) *GetCreatureType {
 	consumer := GetCreatureType{}
 	if err := settings_loader.Load(&consumer.Config); err != nil {
 		panic("Bad settings loader")
@@ -41,24 +41,23 @@ func New(ctx context.Context, settings_loader settings.SettingsLoader) *GetCreat
 		panic("unique group setted - setup group name")
 	}
 	consumer.ctx, consumer.cancel = context.WithCancel(ctx)
-	return &consumer
-}
-
-func (consumer *GetCreatureType) Run() {
-	if consumer.isValid() != nil {
-		panic("trying to run invalid route")
-	}
 	consumer.reader = kafka.NewReader(kafka.ReaderConfig{
 		Brokers: consumer.Config.Kafka.Servers,
 		Topic:   consumer.Config.Kafka.GetCreatureTypes.Topic,
 		GroupID: consumer.Config.Kafka.GetCreatureTypes.GroupID,
 	})
-	defer consumer.reader.Close()
+	return &consumer
+}
+
+func (consumer *GetCreatureType) Run() {
+	if err := consumer.isValid(); err != nil {
+		panic(fmt.Errorf("trying to run invalid route: %s", err))
+	}
 	for {
 		select {
 		case <-consumer.ctx.Done():
 			logger.GetInstance().Info(
-				"finishing consumer by context",
+				"stop consumer by context",
 			)
 			return
 		default:
@@ -74,10 +73,11 @@ func (consumer *GetCreatureType) Run() {
 }
 
 func (consumer *GetCreatureType) Stop() {
+	defer consumer.reader.Close()
 	consumer.cancel()
 }
 
-func (consumer *GetCreatureType) SetupMsgHandler(handler kafka_interfaces.MsgHandler) error {
+func (consumer *GetCreatureType) SetupMsgHandler(handler kafkaInterfaces.MsgHandler) error {
 	if handler == nil {
 		return fmt.Errorf("msg handler is nil")
 	}

@@ -7,5 +7,5 @@ import (
 )
 
 type MsgHandler interface {
-	Handle(ctx context.Context, msg *kafka.Message)
+	Handle(ctx context.Context, msg *kafka.Message) error
 }

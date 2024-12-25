@@ -1,6 +1,7 @@
 package routers
 
 import (
+	"context"
 	"fmt"
 
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers/gin"
 	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers/grpc"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers/kafka"
 
 	"go.uber.org/zap"
 )
@@ -19,7 +21,7 @@ type Config struct {
 	}
 }
 
-func New(settings_loader settings.SettingsLoader) []interfaces.Router {
+func New(ctx context.Context, settings_loader settings.SettingsLoader) []interfaces.Router {
 	if settings_loader == nil {
 		return []interfaces.Router{}
 	}
@@ -44,6 +46,12 @@ func New(settings_loader settings.SettingsLoader) []interfaces.Router {
 				panic("can't create grpc router")
 			}
 			routers = append(routers, grpc_router)
+		case "kafka":
+			kafkaRouter := kafka.New(ctx, settings_loader)
+			if kafkaRouter == nil {
+				panic("can't create kafka router")
+			}
+			routers = append(routers, kafkaRouter)
 		default:
 			logger.GetInstance().Warn(
 				"unknown router type",

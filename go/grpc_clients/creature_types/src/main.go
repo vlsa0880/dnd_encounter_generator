@@ -20,32 +20,30 @@ func initSettingsLoader() *settings.EnvLoader {
 	if loader == nil {
 		panic("bad settings loader")
 	}
-	var settings_loader isettings.SettingsLoader = loader
+	var settingsLoader isettings.SettingsLoader = loader
 
-	logger.InitLogger(settings_loader)
+	logger.InitLogger(settingsLoader)
 	return loader
 }
 
 func getServerConfig(loader *settings.EnvLoader) *router.Config {
 	var config router.Config
 	if err := loader.Load(&config); err != nil {
-		err_msg := fmt.Errorf("Can't load grpc server settings: %s", err)
-		panic(err_msg)
+		panic(fmt.Errorf("Can't load grpc server settings: %s", err))
 	}
 	return &config
 }
 
 type Config struct {
 	GRPC struct {
-		ClientTimeout string
+		ClientTimeout time.Duration
 	}
 }
 
 func getClientConfig(loader *settings.EnvLoader) *Config {
 	var config Config
 	if err := loader.Load(&config); err != nil {
-		err_msg := fmt.Errorf("Can't load grpc client settings: %s", err)
-		panic(err_msg)
+		panic(fmt.Errorf("Can't load grpc client settings: %s", err))
 	}
 	return &config
 }
@@ -64,15 +62,10 @@ func createConnection(loader *settings.EnvLoader) *grpc.ClientConn {
 }
 
 func main() {
-	settings_loader := initSettingsLoader()
-	client_config := getClientConfig(settings_loader)
-	client_timeout, err := time.ParseDuration(client_config.GRPC.ClientTimeout)
-	if err != nil {
-		err_msg := fmt.Sprintf("can't get grpc client timeout: %s", err)
-		panic(err_msg)
-	}
+	settingsLoader := initSettingsLoader()
+	clientConfig := getClientConfig(settingsLoader)
 
-	conn := createConnection(settings_loader)
+	conn := createConnection(settingsLoader)
 	defer conn.Close()
 
 	client := gen.NewDataHandlerClient(conn)
@@ -80,22 +73,22 @@ func main() {
 	req := gen.GetRequest{}
 	ctx, cancel := context.WithTimeout(
 		context.Background(),
-		client_timeout,
+		clientConfig.GRPC.ClientTimeout,
 	)
 	defer cancel()
 	var resp *gen.GetResponse
-	watcher_channel := make(chan struct{})
+	watcherChannel := make(chan struct{})
 	go func() {
 		var err error
 		if resp, err = client.GetCreatureTypes(ctx, &req); err != nil {
 			err_msg := fmt.Sprintf("Can't get creature types by grpc: %s", err)
 			panic(err_msg)
 		}
-		watcher_channel <- struct{}{}
+		watcherChannel <- struct{}{}
 	}()
 
 	select {
-	case <-watcher_channel:
+	case <-watcherChannel:
 		break
 	case <-ctx.Done():
 		panic("get creature type stopped by timeout")
