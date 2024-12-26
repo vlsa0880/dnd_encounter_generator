@@ -9,6 +9,7 @@ import (
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 	kafkaInterfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers/kafka/interfaces"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
+	"go.uber.org/zap"
 )
 
 type Config struct {
@@ -46,6 +47,10 @@ func NewGetCreatureType(ctx context.Context, settings_loader settings.SettingsLo
 		Topic:   consumer.Config.Kafka.GetCreatureTypes.Topic,
 		GroupID: consumer.Config.Kafka.GetCreatureTypes.GroupID,
 	})
+	logger.GetInstance().Info(
+		"consumer created",
+		zap.String("config", fmt.Sprintf("%v", consumer.Config)),
+	)
 	return &consumer
 }
 
@@ -53,6 +58,10 @@ func (consumer *GetCreatureType) Run() {
 	if err := consumer.isValid(); err != nil {
 		panic(fmt.Errorf("trying to run invalid route: %s", err))
 	}
+	logger.GetInstance().Info(
+		"consumer started",
+		zap.String("config", fmt.Sprintf("%v", consumer.Config)),
+	)
 	for {
 		select {
 		case <-consumer.ctx.Done():
@@ -67,6 +76,10 @@ func (consumer *GetCreatureType) Run() {
 					return
 				}
 			}
+			logger.GetInstance().Info(
+				"get message",
+				zap.String("header", fmt.Sprintf("%v", msg.Headers)),
+			)
 			go consumer.msgHandler.Handle(consumer.ctx, &msg)
 		}
 	}

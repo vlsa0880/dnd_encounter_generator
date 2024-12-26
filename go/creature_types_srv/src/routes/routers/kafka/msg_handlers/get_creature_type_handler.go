@@ -8,7 +8,9 @@ import (
 
 	"github.com/segmentio/kafka-go"
 	dataHandlersInterfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/data_handlers/interfaces"
+	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
+	"go.uber.org/zap"
 )
 
 type Config struct {
@@ -47,7 +49,7 @@ func NewCreatureTypeHandler(settingsLoader settings.SettingsLoader, dataHandler 
 			Brokers: handler.config.Kafka.Servers,
 			Topic:   handler.config.Kafka.SendCreatureTypes.Topic,
 		})
-
+	logger.GetInstance().Info("handler successfully created")
 	return handler
 }
 
@@ -55,17 +57,30 @@ func (handler *GetCreatureTypeMsgHandler) Handle(ctx context.Context, msg *kafka
 	handleCtx, cancel := context.WithTimeout(ctx, handler.config.Kafka.ProduceTimeout)
 	defer cancel()
 	types := handler.dataHandler.GetCreatureTypes(handleCtx)
+	logger.GetInstance().Debug(
+		"types to send",
+		zap.String("types", fmt.Sprintf("%v", types)),
+	)
 	typesData, err := json.Marshal(types)
 	if err != nil {
 		return fmt.Errorf("can't transform data for sending: %s", err)
 	}
+	logger.GetInstance().Debug(
+		"types data to send",
+		zap.String("types", fmt.Sprintf("%v", typesData)),
+	)
 	outMsg := kafka.Message{
 		Value:   typesData,
 		Headers: msg.Headers,
 	}
+	logger.GetInstance().Info(
+		"trying to send message",
+		zap.String("msg", fmt.Sprintf("%v", outMsg)),
+	)
 	err = handler.writer.WriteMessages(
 		handleCtx,
 		outMsg,
 	)
+	logger.GetInstance().Info("message successfully sended")
 	return err
 }
