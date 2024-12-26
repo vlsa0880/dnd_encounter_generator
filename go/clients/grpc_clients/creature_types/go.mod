@@ -1,4 +1,4 @@
-module creature_types_grpc_client
+module github.com/vlsa0880/dnd_encounter_generator/go/clients/kafka_clients/creature_types
 
 go 1.23.2
 
@@ -21,4 +21,4 @@ require (
 	google.golang.org/protobuf v1.36.0 // indirect
 )
 
-replace github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv v0.0.0 => ../../creature_types_srv
+replace github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv v0.0.0 => ../../../creature_types_srv
