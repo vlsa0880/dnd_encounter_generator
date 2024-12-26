@@ -28,11 +28,6 @@ func New(ctx context.Context, settingsLoader settings.SettingsLoader) *Manager {
 	}
 
 	manager.ctx, manager.ctxCancel = context.WithCancel(ctx)
-	consumers.NewGetCreatureType(
-		manager.ctx,
-		manager.settingsLoader,
-	)
-
 	return manager
 }
 
