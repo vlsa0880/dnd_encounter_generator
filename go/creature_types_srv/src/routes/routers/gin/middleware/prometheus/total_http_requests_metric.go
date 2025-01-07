@@ -6,16 +6,15 @@ import (
 )
 
 func NewTotalHttpRequestMetric() gin.HandlerFunc {
-	httpRequests := prometheus.NewCounterVec(
+	httpRequests := prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "http_requests_total",
 			Help: "Total number of HTTP requests",
 		},
-		[]string{"method", "path"},
 	)
 	prometheus.MustRegister(httpRequests)
 	return func(ctx *gin.Context) {
 		ctx.Next()
-		httpRequests.WithLabelValues(ctx.Request.Method, ctx.FullPath()).Inc()
+		httpRequests.Inc()
 	}
 }

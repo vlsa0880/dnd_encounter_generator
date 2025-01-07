@@ -6,7 +6,8 @@ import (
 )
 
 func Setup(router *gin.Engine) {
-	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
-
+	router.Use(NewHttpRequestDurationMetric())
 	router.Use(NewTotalHttpRequestMetric())
+
+	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 }
