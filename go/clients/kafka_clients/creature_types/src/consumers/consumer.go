@@ -72,7 +72,7 @@ func (consumer *GetCreatureTypeConsumer) Run(ctx context.Context, finishChan cha
 			if err := json.Unmarshal(msg.Value, &types); err != nil {
 				panic(fmt.Sprintf("can't read message: %s", err))
 			}
-			logger.GetInstance().Info(
+			logger.GetInstance().Debug(
 				"msg processed",
 				zap.String("types", fmt.Sprintf("%v", types)),
 			)

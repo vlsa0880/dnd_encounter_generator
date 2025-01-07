@@ -32,7 +32,7 @@ func main() {
 	if err := producer.Write(ctx); err != nil {
 		panic(fmt.Sprintf("can't write data: %s", err))
 	}
-	logger.GetInstance().Info(
+	logger.GetInstance().Debug(
 		"waiting for response message...",
 	)
 	select {
@@ -41,7 +41,7 @@ func main() {
 			"response message wasn't proccessed in time",
 		)
 	case <-finishChan:
-		logger.GetInstance().Info(
+		logger.GetInstance().Debug(
 			"response message was successfully processed",
 		)
 	}
