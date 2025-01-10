@@ -80,7 +80,15 @@ func (consumer *GetCreatureType) Run() {
 				"get message",
 				zap.String("header", fmt.Sprintf("%v", msg.Headers)),
 			)
-			go consumer.msgHandler.Handle(consumer.ctx, &msg)
+			go func() {
+				err := consumer.msgHandler.Handle(consumer.ctx, &msg)
+				if err != nil {
+					logger.GetInstance().Error(
+						"can't handle msg",
+						zap.String("err_msg", err.Error()),
+					)
+				}
+			}()
 		}
 	}
 }
