@@ -2,6 +2,7 @@ package tests
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"testing"
 	"time"
@@ -27,7 +28,14 @@ func TestGetCreatureTypes_GRPCCall(t *testing.T) {
 	expected_data := data_handler.GetCreatureTypes(context.Background())
 
 	services.New(grpcServer, &data_handler)
-	go grpcServer.Serve(listener)
+	go func() {
+		err := grpcServer.Serve(listener)
+		if err != nil {
+			t.Error(
+				fmt.Printf("grpc server return an error: %s", err),
+			)
+		}
+	}()
 
 	grpcConnect, err := grpc.NewClient(
 		listener.Addr().String(),
