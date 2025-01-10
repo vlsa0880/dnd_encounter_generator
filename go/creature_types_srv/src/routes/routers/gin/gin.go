@@ -28,10 +28,8 @@ type GinManager struct {
 	config      Config
 }
 
-func New(settingsLoader settings.SettingsLoader) *GinManager {
+func New(settingsLoader settings.SettingsLoader, dataHandler data_handlers_interfaces.DataHandler) *GinManager {
 	mgr := GinManager{}
-	mgr.router = gin.Default()
-	mgr.setupMiddleware(settingsLoader)
 	if err := settingsLoader.Load(&mgr.config); err != nil {
 		logger.GetInstance().Error(
 			"Error loading gin router config",
@@ -39,6 +37,25 @@ func New(settingsLoader settings.SettingsLoader) *GinManager {
 		)
 		return nil
 	}
+	if err := mgr.setupDataHandler(dataHandler); err != nil {
+		logger.GetInstance().Error(
+			"can't setup data handler",
+			zap.String("msg", err.Error()),
+		)
+		return nil
+	}
+	mgr.router = gin.Default()
+	if err := mgr.setupMiddleware(settingsLoader); err != nil {
+		logger.GetInstance().Error(
+			"can't setup middleware",
+			zap.String("msg", err.Error()),
+		)
+		return nil
+	}
+	mgr.router.GET(
+		mgr.config.Http.GetCreatureTypesEP,
+		mgr.setupGetCreatureTypes,
+	)
 	return &mgr
 }
 
@@ -56,18 +73,11 @@ func (mgr *GinManager) Run() {
 func (mgr *GinManager) Stop() {
 }
 
-func (mgr *GinManager) SetupDataHandler(dataHandler data_handlers_interfaces.DataHandler) error {
-	if mgr.router == nil {
-		return fmt.Errorf("gin not inited - gin. Engine is nil")
-	}
+func (mgr *GinManager) setupDataHandler(dataHandler data_handlers_interfaces.DataHandler) error {
 	if dataHandler == nil {
 		return fmt.Errorf("data handler is nil")
 	}
 	mgr.dataHandler = dataHandler
-	mgr.router.GET(
-		mgr.config.Http.GetCreatureTypesEP,
-		mgr.setupGetCreatureTypes,
-	)
 	return nil
 }
 
@@ -75,8 +85,11 @@ func (mgr *GinManager) setupGetCreatureTypes(ginCtx *gin.Context) {
 	ginCtx.IndentedJSON(http.StatusOK, mgr.dataHandler.GetCreatureTypes(ginCtx))
 }
 
-func (mgr *GinManager) setupMiddleware(settingsLoader settings.SettingsLoader) {
+func (mgr *GinManager) setupMiddleware(settingsLoader settings.SettingsLoader) error {
 	mgr.router.Use(gin_middleware.NewLoggerHandler(settingsLoader))
 
-	gin_middleware_prometheus.SetupPrometheusMetrics(mgr.router, settingsLoader)
+	if err := gin_middleware_prometheus.SetupPrometheusMetrics(mgr.router, settingsLoader); err != nil {
+		return err
+	}
+	return nil
 }

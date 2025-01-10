@@ -4,8 +4,10 @@ import (
 	"fmt"
 
 	data_handlers_interfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/data_handlers/interfaces"
+	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers/grpc/services"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
+	"go.uber.org/zap"
 )
 
 type Manager struct {
@@ -13,9 +15,16 @@ type Manager struct {
 	dataHandler data_handlers_interfaces.DataHandler
 }
 
-func New(settingsLoader settings.SettingsLoader) *Manager {
+func New(settingsLoader settings.SettingsLoader, dataHandler data_handlers_interfaces.DataHandler) *Manager {
 	var manager Manager
 	manager.router = NewServer(settingsLoader)
+	if err := manager.setupDataHandler(dataHandler); err != nil {
+		logger.GetInstance().Error(
+			"can't setup data handler",
+			zap.String("msg", err.Error()),
+		)
+		return nil
+	}
 	return &manager
 }
 
@@ -35,7 +44,7 @@ func (manager *Manager) Stop() {
 	manager.router.Stop()
 }
 
-func (manager *Manager) SetupDataHandler(dataHandler data_handlers_interfaces.DataHandler) error {
+func (manager *Manager) setupDataHandler(dataHandler data_handlers_interfaces.DataHandler) error {
 	if dataHandler == nil {
 		return fmt.Errorf("Data handler is nil")
 	}

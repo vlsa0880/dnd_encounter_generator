@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	data_handlers_interfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/data_handlers/interfaces"
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/interfaces"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
@@ -21,12 +22,12 @@ type Config struct {
 	}
 }
 
-func New(ctx context.Context, settings_loader settings.SettingsLoader) []interfaces.Router {
-	if settings_loader == nil {
+func New(ctx context.Context, settingsLoader settings.SettingsLoader, dataHandler data_handlers_interfaces.DataHandler) []interfaces.Router {
+	if settingsLoader == nil {
 		return []interfaces.Router{}
 	}
 	config := Config{}
-	if err := settings_loader.Load(&config); err != nil {
+	if err := settingsLoader.Load(&config); err != nil {
 		err_msg := fmt.Errorf("can't load routers factory settings: %s", err)
 		panic(err_msg)
 	}
@@ -35,19 +36,19 @@ func New(ctx context.Context, settings_loader settings.SettingsLoader) []interfa
 	for _, router_name := range config.Router.Types {
 		switch router_name {
 		case "rest":
-			gin_router := gin.New(settings_loader)
+			gin_router := gin.New(settingsLoader, dataHandler)
 			if gin_router == nil {
 				panic("can't create gin router")
 			}
 			routers = append(routers, gin_router)
 		case "grpc":
-			grpc_router := grpc.New(settings_loader)
+			grpc_router := grpc.New(settingsLoader, dataHandler)
 			if grpc_router == nil {
 				panic("can't create grpc router")
 			}
 			routers = append(routers, grpc_router)
 		case "kafka":
-			kafkaRouter := kafka.New(ctx, settings_loader)
+			kafkaRouter := kafka.New(ctx, settingsLoader, dataHandler)
 			if kafkaRouter == nil {
 				panic("can't create kafka router")
 			}

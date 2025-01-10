@@ -2,7 +2,6 @@ package application
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -28,11 +27,11 @@ func NewApplication() *Application {
 	if loader == nil {
 		return nil
 	}
-	var settings_loader isettings.SettingsLoader = loader
+	var settingsLoader isettings.SettingsLoader = loader
 
-	logger.InitLogger(settings_loader)
+	logger.InitLogger(settingsLoader)
 
-	handler := data_handlers.New(settings_loader)
+	handler := data_handlers.New(settingsLoader)
 	if handler == nil {
 		logger.GetInstance().Error("can't create data handler")
 		return nil
@@ -40,16 +39,10 @@ func NewApplication() *Application {
 
 	application := Application{}
 	application.ctx, application.ctxCancel = context.WithCancel(context.Background())
-	application.routers = routers.New(application.ctx, settings_loader)
+	application.routers = routers.New(application.ctx, settingsLoader, handler)
 	if len(application.routers) < 1 {
 		panic("no routers created - check env")
 	}
-	application.forEach(func(router routes_interfaces.Router) {
-		if err := router.SetupDataHandler(handler); err != nil {
-			err_msg := fmt.Errorf("can't setup data handler: %s", err)
-			panic(err_msg)
-		}
-	})
 
 	return &application
 }

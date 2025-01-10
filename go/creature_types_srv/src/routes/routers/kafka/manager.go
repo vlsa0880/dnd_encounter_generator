@@ -5,10 +5,12 @@ import (
 	"fmt"
 
 	data_handlers_interfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/data_handlers/interfaces"
+	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers/kafka/consumers"
 	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers/kafka/interfaces"
 	msghandlers "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers/kafka/msg_handlers"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
+	"go.uber.org/zap"
 )
 
 type Manager struct {
@@ -18,16 +20,21 @@ type Manager struct {
 	consumers      []interfaces.Consumer
 }
 
-func New(ctx context.Context, settingsLoader settings.SettingsLoader) *Manager {
+func New(ctx context.Context, settingsLoader settings.SettingsLoader, dataHandler data_handlers_interfaces.DataHandler) *Manager {
 	if settingsLoader == nil {
 		panic("bad settings loader")
 	}
-
 	manager := &Manager{
 		settingsLoader: settingsLoader,
 	}
-
 	manager.ctx, manager.ctxCancel = context.WithCancel(ctx)
+	if err := manager.setupDataHandler(dataHandler); err != nil {
+		logger.GetInstance().Error(
+			"can't setup data handler",
+			zap.String("msg", err.Error()),
+		)
+		return nil
+	}
 	return manager
 }
 
@@ -43,13 +50,13 @@ func (manager *Manager) Stop() {
 	}
 }
 
-func (manager *Manager) SetupDataHandler(data_handler data_handlers_interfaces.DataHandler) error {
+func (manager *Manager) setupDataHandler(dataHandler data_handlers_interfaces.DataHandler) error {
 	if err := manager.isErrors(); err != nil {
 		return err
 	}
 	handlerGetCreatureType := msghandlers.NewCreatureTypeHandler(
 		manager.settingsLoader,
-		data_handler,
+		dataHandler,
 	)
 	var consumerGetCreatureTypes interfaces.Consumer = consumers.NewGetCreatureType(
 		manager.ctx,
