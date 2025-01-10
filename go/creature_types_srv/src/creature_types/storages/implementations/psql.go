@@ -36,20 +36,20 @@ func (manager *PsqlCreatureTypesManager) Load() error {
 	if err = manager.db.AutoMigrate(&CreatureTypesData{}); err != nil {
 		return err
 	}
-	var creatures_types_data []CreatureTypesData
-	if err = manager.db.Find(&creatures_types_data).Error; err != nil {
+	var creatureTypesData []CreatureTypesData
+	if err = manager.db.Find(&creatureTypesData).Error; err != nil {
 		return err
 	}
-	manager.fill(creatures_types_data)
+	manager.fill(creatureTypesData)
 	return nil
 }
 
-func (manager *PsqlCreatureTypesManager) fill(creature_types_data []CreatureTypesData) {
-	manager.creature_types = make(
+func (manager *PsqlCreatureTypesManager) fill(creatureTypesData []CreatureTypesData) {
+	manager.creatureTypes = make(
 		creature_types.Types,
-		len(creature_types_data),
+		len(creatureTypesData),
 	)
-	for index, creature_type := range creature_types_data {
-		manager.creature_types[index] = creature_type.Type
+	for index, creature_type := range creatureTypesData {
+		manager.creatureTypes[index] = creature_type.Type
 	}
 }

@@ -11,7 +11,7 @@ import (
 
 type serverAPI struct {
 	gen.UnimplementedDataHandlerServer
-	data_handler data_handlers_interfaces.DataHandler
+	dataHandler data_handlers_interfaces.DataHandler
 }
 
 type Getter interface {
@@ -19,12 +19,12 @@ type Getter interface {
 }
 
 func New(gRPCServer *grpc.Server, handler data_handlers_interfaces.DataHandler) {
-	gen.RegisterDataHandlerServer(gRPCServer, &serverAPI{data_handler: handler})
+	gen.RegisterDataHandlerServer(gRPCServer, &serverAPI{dataHandler: handler})
 }
 
 func (server *serverAPI) GetCreatureTypes(ctx context.Context, req *gen.GetRequest) (*gen.GetResponse, error) {
 	resp := gen.GetResponse{}
-	for _, creature_type := range server.data_handler.GetCreatureTypes(ctx) {
+	for _, creature_type := range server.dataHandler.GetCreatureTypes(ctx) {
 		resp.CreatureTypes = append(
 			resp.CreatureTypes,
 			&gen.CreatureType{Name: creature_type.Name})

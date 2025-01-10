@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/segmentio/kafka-go"
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
-	kafkaInterfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers/kafka/interfaces"
+	kafka_interfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers/kafka/interfaces"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
 	"go.uber.org/zap"
 )
@@ -25,7 +25,7 @@ type Config struct {
 
 type GetCreatureType struct {
 	reader     *kafka.Reader
-	msgHandler kafkaInterfaces.MsgHandler
+	msgHandler kafka_interfaces.MsgHandler
 	Config     Config
 	ctx        context.Context
 	cancel     context.CancelFunc
@@ -98,7 +98,7 @@ func (consumer *GetCreatureType) Stop() {
 	consumer.cancel()
 }
 
-func (consumer *GetCreatureType) SetupMsgHandler(handler kafkaInterfaces.MsgHandler) error {
+func (consumer *GetCreatureType) SetupMsgHandler(handler kafka_interfaces.MsgHandler) error {
 	if handler == nil {
 		return fmt.Errorf("msg handler is nil")
 	}

@@ -21,7 +21,7 @@ func main() {
 	defer handleExit()
 	controller := application.NewApplication()
 	if controller == nil {
-		panic("Can't create controller")
+		panic("Can't create application")
 	}
 	controller.Run()
 }

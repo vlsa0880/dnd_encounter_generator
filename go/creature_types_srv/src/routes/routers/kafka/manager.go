@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	dataHandlersInterfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/data_handlers/interfaces"
+	data_handlers_interfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/data_handlers/interfaces"
 	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers/kafka/consumers"
 	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers/kafka/interfaces"
 	msghandlers "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers/kafka/msg_handlers"
@@ -43,7 +43,7 @@ func (manager *Manager) Stop() {
 	}
 }
 
-func (manager *Manager) SetupDataHandler(data_handler dataHandlersInterfaces.DataHandler) error {
+func (manager *Manager) SetupDataHandler(data_handler data_handlers_interfaces.DataHandler) error {
 	if err := manager.isErrors(); err != nil {
 		return err
 	}

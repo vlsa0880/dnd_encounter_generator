@@ -29,10 +29,10 @@ func GetInstance() *zap.Logger {
 	return instance
 }
 
-func InitLogger(settings_loader settings.SettingsLoader) {
+func InitLogger(settingsLoader settings.SettingsLoader) {
 	once.Do(func() {
 		config := Config{}
-		if err := settings_loader.Load(&config); err != nil {
+		if err := settingsLoader.Load(&config); err != nil {
 			err_msg := fmt.Sprintf("Can't load logger config: %s", err)
 			panic(err_msg)
 		}

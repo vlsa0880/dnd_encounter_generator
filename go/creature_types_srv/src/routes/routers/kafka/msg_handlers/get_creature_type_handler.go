@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/segmentio/kafka-go"
-	dataHandlersInterfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/data_handlers/interfaces"
+	data_handlers_interfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/data_handlers/interfaces"
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
 	"go.uber.org/zap"
@@ -25,11 +25,11 @@ type Config struct {
 
 type GetCreatureTypeMsgHandler struct {
 	config      Config
-	dataHandler dataHandlersInterfaces.DataHandler
+	dataHandler data_handlers_interfaces.DataHandler
 	writer      *kafka.Writer
 }
 
-func NewCreatureTypeHandler(settingsLoader settings.SettingsLoader, dataHandler dataHandlersInterfaces.DataHandler) *GetCreatureTypeMsgHandler {
+func NewCreatureTypeHandler(settingsLoader settings.SettingsLoader, dataHandler data_handlers_interfaces.DataHandler) *GetCreatureTypeMsgHandler {
 	if dataHandler == nil {
 		panic("bad data handler")
 	} else if settingsLoader == nil {

@@ -52,14 +52,14 @@ func TestGetCreatureTypes_GRPCCall(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
 	defer cancel()
 	var resp *gen.GetResponse
-	watcher_channel := make(chan struct{})
+	validFinishChannel := make(chan struct{})
 	go func() {
 		resp, err = client.GetCreatureTypes(ctx, &req)
-		watcher_channel <- struct{}{}
+		validFinishChannel <- struct{}{}
 	}()
 
 	select {
-	case <-watcher_channel:
+	case <-validFinishChannel:
 		break
 	case <-ctx.Done():
 		t.Error("get creature type stopped by timeout")

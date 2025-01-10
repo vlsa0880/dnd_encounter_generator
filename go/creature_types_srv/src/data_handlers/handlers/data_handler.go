@@ -21,7 +21,7 @@ type Config struct {
 }
 
 type DataHandler struct {
-	creature_types_mngr creature_types_interfaces.CreatureTypeManager
+	creatureTypesManager creature_types_interfaces.CreatureTypeManager
 }
 
 func New(settings_loader settings.SettingsLoader) *DataHandler {
@@ -32,18 +32,18 @@ func New(settings_loader settings.SettingsLoader) *DataHandler {
 		return nil
 	}
 	handler := DataHandler{}
-	handler.creature_types_mngr = storages.New(&config.CreatureTypes.StorageType)
-	if handler.creature_types_mngr == nil {
+	handler.creatureTypesManager = storages.New(&config.CreatureTypes.StorageType)
+	if handler.creatureTypesManager == nil {
 		logger.GetInstance().Error("Can't create creature types mngr")
 		return nil
 	}
-	if err = handler.creature_types_mngr.Init(); err != nil {
+	if err = handler.creatureTypesManager.Init(); err != nil {
 		logger.GetInstance().Error(
 			"Can't init creature types mngr",
 			zap.String("msg", err.Error()),
 		)
 		return nil
-	} else if err = handler.creature_types_mngr.Load(); err != nil {
+	} else if err = handler.creatureTypesManager.Load(); err != nil {
 		logger.GetInstance().Error(
 			"Can't load types from creature types mngr",
 			zap.String("msg", err.Error()),
@@ -54,5 +54,5 @@ func New(settings_loader settings.SettingsLoader) *DataHandler {
 }
 
 func (handler *DataHandler) GetCreatureTypes(ctx context.Context) creature_types.Types {
-	return handler.creature_types_mngr.GetData()
+	return handler.creatureTypesManager.GetData()
 }
