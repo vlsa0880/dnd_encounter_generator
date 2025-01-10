@@ -1,4 +1,4 @@
-package controllers
+package application
 
 import (
 	"context"
@@ -17,13 +17,13 @@ import (
 
 type RouterProcess func(router routes_interfaces.Router)
 
-type Controller struct {
+type Application struct {
 	ctx       context.Context
 	ctxCancel context.CancelFunc
 	routers   []routes_interfaces.Router
 }
 
-func New() *Controller {
+func NewApplication() *Application {
 	loader := settings.New()
 	if loader == nil {
 		return nil
@@ -38,35 +38,35 @@ func New() *Controller {
 		return nil
 	}
 
-	controller := Controller{}
-	controller.ctx, controller.ctxCancel = context.WithCancel(context.Background())
-	controller.routers = routers.New(controller.ctx, settings_loader)
-	if len(controller.routers) < 1 {
+	application := Application{}
+	application.ctx, application.ctxCancel = context.WithCancel(context.Background())
+	application.routers = routers.New(application.ctx, settings_loader)
+	if len(application.routers) < 1 {
 		panic("no routers created - check env")
 	}
-	controller.forEach(func(router routes_interfaces.Router) {
+	application.forEach(func(router routes_interfaces.Router) {
 		if err := router.SetupDataHandler(handler); err != nil {
 			err_msg := fmt.Errorf("can't setup data handler: %s", err)
 			panic(err_msg)
 		}
 	})
 
-	return &controller
+	return &application
 }
 
-func (controller *Controller) Run() {
-	defer controller.ctxCancel()
-	controller.forEach(func(router routes_interfaces.Router) { go router.Run() })
+func (application *Application) Run() {
+	defer application.ctxCancel()
+	application.forEach(func(router routes_interfaces.Router) { go router.Run() })
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
 	<-stop
-	controller.forEach(func(router routes_interfaces.Router) { go router.Stop() })
+	application.forEach(func(router routes_interfaces.Router) { go router.Stop() })
 }
 
-func (controller *Controller) forEach(processer RouterProcess) {
-	for _, router := range controller.routers {
+func (application *Application) forEach(processer RouterProcess) {
+	for _, router := range application.routers {
 		if router == nil {
-			panic("some of controller routers is nil")
+			panic("some of application routers is nil")
 		}
 		processer(router)
 	}

@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/controllers"
+	application "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/applications"
 )
 
 type Exit struct{ Code int }
@@ -19,7 +19,7 @@ func handleExit() {
 
 func main() {
 	defer handleExit()
-	controller := controllers.New()
+	controller := application.NewApplication()
 	if controller == nil {
 		panic("Can't create controller")
 	}
