@@ -75,8 +75,8 @@ func (mgr *GinManager) setupGetCreatureTypes(ginCtx *gin.Context) {
 	ginCtx.IndentedJSON(http.StatusOK, mgr.dataHandler.GetCreatureTypes(ginCtx))
 }
 
-func (mgr *GinManager) setupMiddleware(settings_loader settings.SettingsLoader) {
-	mgr.router.Use(gin_middleware.NewLoggerHandler(settings_loader))
+func (mgr *GinManager) setupMiddleware(settingsLoader settings.SettingsLoader) {
+	mgr.router.Use(gin_middleware.NewLoggerHandler(settingsLoader))
 
-	gin_middleware_prometheus.Setup(mgr.router)
+	gin_middleware_prometheus.SetupPrometheusMetrics(mgr.router, settingsLoader)
 }
