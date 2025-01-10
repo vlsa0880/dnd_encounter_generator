@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	application "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/applications"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application"
 )
 
 type Exit struct{ Code int }
