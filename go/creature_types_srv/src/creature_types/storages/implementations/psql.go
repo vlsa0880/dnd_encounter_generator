@@ -1,16 +1,20 @@
 package creature_types_storages
 
 import (
+	"fmt"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+
+	global_logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
+	"moul.io/zapgorm2"
 
 	creature_types "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/creature_types/data"
+	creature_types_data "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/creature_types/data"
 	db_utils "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/utils/db"
 )
 
 type PsqlCreatureTypesManager struct {
-	BaseCreatureTypeManager
 	db *gorm.DB
 }
 
@@ -22,34 +26,42 @@ type CreatureTypesData struct {
 func (manager *PsqlCreatureTypesManager) Init() error {
 	dsn := db_utils.DsnByEnv()
 	var err error
-	manager.db, err = gorm.Open(postgres.Open(*dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Silent),
-	})
+	logger := zapgorm2.New(global_logger.GetInstance())
+	manager.db, err = gorm.Open(
+		postgres.Open(*dsn),
+		&gorm.Config{
+			Logger: logger,
+		})
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (manager *PsqlCreatureTypesManager) Load() error {
+func (manager *PsqlCreatureTypesManager) GetData() (*creature_types_data.Data, error) {
 	var err error
 	if err = manager.db.AutoMigrate(&CreatureTypesData{}); err != nil {
-		return err
+		return nil, err
 	}
 	var creatureTypesData []CreatureTypesData
 	if err = manager.db.Find(&creatureTypesData).Error; err != nil {
-		return err
+		return nil, err
 	}
-	manager.fill(creatureTypesData)
-	return nil
+	res := creature_types_data.Data{}
+	for _, creature_type := range creatureTypesData {
+		res.Types = append(res.Types, creature_types_data.Type{Name: creature_type.Name})
+	}
+	return &res, nil
 }
 
-func (manager *PsqlCreatureTypesManager) fill(creatureTypesData []CreatureTypesData) {
-	manager.creatureTypes = make(
-		creature_types.Types,
-		len(creatureTypesData),
-	)
-	for index, creature_type := range creatureTypesData {
-		manager.creatureTypes[index] = creature_type.Type
-	}
+func (manager *PsqlCreatureTypesManager) Upload(types *creature_types.Data) error {
+	return manager.db.Transaction(func(tx *gorm.DB) error {
+		if err := manager.db.Delete(&CreatureTypesData{}, "*").Error; err != nil {
+			return fmt.Errorf("can't delete all records from creature type table")
+		}
+		if err := manager.db.Create(&types).Error; err != nil {
+			return fmt.Errorf("can't upload creature types: %w", err)
+		}
+		return nil
+	})
 }

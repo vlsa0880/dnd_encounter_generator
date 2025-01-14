@@ -10,13 +10,15 @@ type Type struct {
 	Name string
 }
 
-type Types []Type
+type Data struct {
+	Types []Type
+}
 
 func (creature_type *Type) String() string {
 	return creature_type.Name
 }
 
-func (types Types) String() string {
+func (types Data) String() string {
 	json, err := json.Marshal(types)
 	if err != nil {
 		logger.GetInstance().Warn(

@@ -31,7 +31,7 @@ func New(ctx context.Context, settingsLoader settings.SettingsLoader, dataHandle
 	if err := manager.setupDataHandler(dataHandler); err != nil {
 		logger.GetInstance().Error(
 			"can't setup data handler",
-			zap.String("msg", err.Error()),
+			zap.Error(err),
 		)
 		return nil
 	}

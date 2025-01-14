@@ -7,5 +7,6 @@ import (
 )
 
 type DataHandler interface {
-	GetCreatureTypes(ctx context.Context) creature_types.Types
+	PutCreatureTypes(ctx context.Context, types *creature_types.Data) error
+	GetCreatureTypes(ctx context.Context) (*creature_types.Data, error)
 }

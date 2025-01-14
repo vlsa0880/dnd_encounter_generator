@@ -24,10 +24,11 @@ func TestGetCreatureTypes_GRPCCall(t *testing.T) {
 	grpcServer := grpc.NewServer()
 	defer grpcServer.Stop()
 
-	data_handler := data_handlers_tests.DataHandlerMock{}
-	expected_data := data_handler.GetCreatureTypes(context.Background())
-
-	services.New(grpcServer, &data_handler)
+	dataHandler := data_handlers_tests.New()
+	assert.NotNil(t, dataHandler)
+	expectedData, err := dataHandler.GetCreatureTypes(context.Background())
+	assert.NoError(t, err)
+	services.New(grpcServer, dataHandler)
 	go func() {
 		err := grpcServer.Serve(listener)
 		if err != nil {
@@ -68,6 +69,6 @@ func TestGetCreatureTypes_GRPCCall(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, resp)
 	for index, creature_type_resp := range resp.CreatureTypes {
-		assert.Equal(t, creature_type_resp.Name, expected_data[index].Name)
+		assert.Equal(t, creature_type_resp.Name, expectedData.Types[index].Name)
 	}
 }

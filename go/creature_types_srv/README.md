@@ -31,12 +31,12 @@ or
 ## Request available creature types
 ### When running with docker
 ```sh
-curl "0.0.0.0:8088/creature_data/types"
+curl "0.0.0.0:8088/creatures_data/types"
 ```
 
 ### When running localy
 ```sh
-curl "localhost:8088/creature_data/types"
+curl "localhost:8088/creatures_data/types"
 ```
 
 ## GRPC

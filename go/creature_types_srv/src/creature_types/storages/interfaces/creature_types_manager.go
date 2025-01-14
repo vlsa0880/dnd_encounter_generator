@@ -6,6 +6,6 @@ import (
 
 type CreatureTypeManager interface {
 	Init() error
-	Load() error
-	GetData() creature_types_data.Types
+	GetData() (*creature_types_data.Data, error)
+	Upload(types *creature_types_data.Data) error
 }

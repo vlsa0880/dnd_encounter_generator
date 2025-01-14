@@ -56,7 +56,10 @@ func NewCreatureTypeHandler(settingsLoader settings.SettingsLoader, dataHandler 
 func (handler *GetCreatureTypeMsgHandler) Handle(ctx context.Context, msg *kafka.Message) error {
 	handleCtx, cancel := context.WithTimeout(ctx, handler.config.Kafka.ProduceTimeout)
 	defer cancel()
-	types := handler.dataHandler.GetCreatureTypes(handleCtx)
+	types, err := handler.dataHandler.GetCreatureTypes(handleCtx)
+	if err != nil {
+		return fmt.Errorf("can't get creature types: %w", err)
+	}
 	logger.GetInstance().Debug(
 		"types to send",
 		zap.String("types", fmt.Sprintf("%v", types)),

@@ -2,10 +2,10 @@ package gin
 
 import (
 	"fmt"
-	"net/http"
 
 	data_handlers_interfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/data_handlers/interfaces"
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
+	handlers "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers/gin/handlers"
 	gin_middleware "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers/gin/middleware"
 	gin_middleware_prometheus "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers/gin/middleware/prometheus"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
@@ -16,9 +16,10 @@ import (
 
 type Config struct {
 	Http struct {
-		Address            string
-		Port               string
-		GetCreatureTypesEP string
+		Address                  string
+		Port                     string
+		GetCreatureTypesEndpoint string
+		PutCreatureTypesEndpoint string
 	}
 }
 
@@ -33,35 +34,34 @@ func New(settingsLoader settings.SettingsLoader, dataHandler data_handlers_inter
 	if err := settingsLoader.Load(&mgr.config); err != nil {
 		logger.GetInstance().Error(
 			"Error loading gin router config",
-			zap.String("msg", err.Error()),
+			zap.Error(err),
 		)
 		return nil
 	}
-	if err := mgr.setupDataHandler(dataHandler); err != nil {
+	if dataHandler == nil {
 		logger.GetInstance().Error(
-			"can't setup data handler",
-			zap.String("msg", err.Error()),
+			"bad data handler",
 		)
 		return nil
 	}
+	mgr.dataHandler = dataHandler
+
 	mgr.router = gin.Default()
 	if err := mgr.setupMiddleware(settingsLoader); err != nil {
 		logger.GetInstance().Error(
 			"can't setup middleware",
-			zap.String("msg", err.Error()),
+			zap.Error(err),
 		)
 		return nil
 	}
-	mgr.router.GET(
-		mgr.config.Http.GetCreatureTypesEP,
-		mgr.setupGetCreatureTypes,
-	)
+
+	mgr.setupRoutes(dataHandler)
 	return &mgr
 }
 
 func (mgr *GinManager) Run() {
 	if mgr.router == nil || mgr.dataHandler == nil {
-		panic("Run Init() and SetupDataHandler() before Run()")
+		panic("Run Init() before Run()")
 	}
 	full_address := mgr.config.Http.Address + ":" + mgr.config.Http.Port
 	if err := mgr.router.Run(full_address); err != nil {
@@ -70,20 +70,7 @@ func (mgr *GinManager) Run() {
 	}
 }
 
-func (mgr *GinManager) Stop() {
-}
-
-func (mgr *GinManager) setupDataHandler(dataHandler data_handlers_interfaces.DataHandler) error {
-	if dataHandler == nil {
-		return fmt.Errorf("data handler is nil")
-	}
-	mgr.dataHandler = dataHandler
-	return nil
-}
-
-func (mgr *GinManager) setupGetCreatureTypes(ginCtx *gin.Context) {
-	ginCtx.IndentedJSON(http.StatusOK, mgr.dataHandler.GetCreatureTypes(ginCtx))
-}
+func (mgr *GinManager) Stop() {}
 
 func (mgr *GinManager) setupMiddleware(settingsLoader settings.SettingsLoader) error {
 	mgr.router.Use(gin_middleware.NewLoggerHandler(settingsLoader))
@@ -91,5 +78,17 @@ func (mgr *GinManager) setupMiddleware(settingsLoader settings.SettingsLoader) e
 	if err := gin_middleware_prometheus.SetupPrometheusMetrics(mgr.router, settingsLoader); err != nil {
 		return err
 	}
+
 	return nil
+}
+
+func (mgr *GinManager) setupRoutes(dataHandler data_handlers_interfaces.DataHandler) {
+	mgr.router.GET(
+		mgr.config.Http.GetCreatureTypesEndpoint,
+		handlers.GetCreatureTypesHandler(dataHandler),
+	)
+	mgr.router.PUT(
+		mgr.config.Http.PutCreatureTypesEndpoint,
+		handlers.PutCreatureTypesHandler(dataHandler),
+	)
 }

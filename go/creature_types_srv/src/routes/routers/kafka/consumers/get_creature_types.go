@@ -85,7 +85,7 @@ func (consumer *GetCreatureType) Run() {
 				if err != nil {
 					logger.GetInstance().Error(
 						"can't handle msg",
-						zap.String("err_msg", err.Error()),
+						zap.Error(err),
 					)
 				}
 			}()
