@@ -14,8 +14,8 @@ type Data struct {
 	Types []Type
 }
 
-func (creature_type *Type) String() string {
-	return creature_type.Name
+func (creatureType *Type) String() string {
+	return creatureType.Name
 }
 
 func (types Data) String() string {

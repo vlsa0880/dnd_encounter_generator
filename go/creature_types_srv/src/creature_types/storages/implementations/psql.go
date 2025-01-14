@@ -18,7 +18,7 @@ type PsqlCreatureTypesManager struct {
 	db *gorm.DB
 }
 
-type CreatureTypesData struct {
+type creatureTypesData struct {
 	creature_types.Type
 	gorm.Model
 }
@@ -40,14 +40,16 @@ func (manager *PsqlCreatureTypesManager) Init() error {
 
 func (manager *PsqlCreatureTypesManager) GetData() (*creature_types_data.Data, error) {
 	var err error
-	if err = manager.db.AutoMigrate(&CreatureTypesData{}); err != nil {
+	if err = manager.db.AutoMigrate(&creatureTypesData{}); err != nil {
 		return nil, err
 	}
-	var creatureTypesData []CreatureTypesData
+	var creatureTypesData []creatureTypesData
 	if err = manager.db.Find(&creatureTypesData).Error; err != nil {
 		return nil, err
 	}
-	res := creature_types_data.Data{}
+	res := creature_types_data.Data{
+		Types: []creature_types_data.Type{},
+	}
 	for _, creature_type := range creatureTypesData {
 		res.Types = append(res.Types, creature_types_data.Type{Name: creature_type.Name})
 	}
@@ -56,10 +58,18 @@ func (manager *PsqlCreatureTypesManager) GetData() (*creature_types_data.Data, e
 
 func (manager *PsqlCreatureTypesManager) Upload(types *creature_types.Data) error {
 	return manager.db.Transaction(func(tx *gorm.DB) error {
-		if err := manager.db.Delete(&CreatureTypesData{}, "*").Error; err != nil {
+		if err := manager.db.Where("deleted_at is NULL").Delete(&creatureTypesData{}).Error; err != nil {
 			return fmt.Errorf("can't delete all records from creature type table")
 		}
-		if err := manager.db.Create(&types).Error; err != nil {
+		sqlData := []creatureTypesData{}
+		for _, creatureType := range types.Types {
+			row := creatureTypesData{
+				Type: creature_types_data.Type{
+					Name: creatureType.Name},
+			}
+			sqlData = append(sqlData, row)
+		}
+		if err := manager.db.Create(&sqlData).Error; err != nil {
 			return fmt.Errorf("can't upload creature types: %w", err)
 		}
 		return nil
