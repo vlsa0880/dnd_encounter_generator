@@ -68,7 +68,7 @@ func (consumer *GetCreatureTypeConsumer) Run(ctx context.Context, finishChan cha
 				zap.String("msg.value", fmt.Sprintf("%v", msg.Value)),
 				zap.String("msg.topic", fmt.Sprintf("%v", msg.Topic)),
 			)
-			var types creature_types_data.Types
+			var types creature_types_data.Data
 			if err := json.Unmarshal(msg.Value, &types); err != nil {
 				panic(fmt.Sprintf("can't read message: %s", err))
 			}
