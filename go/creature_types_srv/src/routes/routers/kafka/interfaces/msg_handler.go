@@ -3,7 +3,7 @@ package interfaces
 import (
 	"context"
 
-	"github.com/segmentio/kafka-go"
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
 type MsgHandler interface {

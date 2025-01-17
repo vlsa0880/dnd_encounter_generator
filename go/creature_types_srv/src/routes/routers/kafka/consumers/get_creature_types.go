@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/google/uuid"
-	"github.com/segmentio/kafka-go"
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 	kafka_interfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers/kafka/interfaces"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
@@ -14,7 +14,7 @@ import (
 
 type Config struct {
 	Kafka struct {
-		Servers          []string
+		Servers          string
 		GetCreatureTypes struct {
 			Topic         string
 			IsGroupUnique bool
@@ -24,7 +24,7 @@ type Config struct {
 }
 
 type GetCreatureType struct {
-	reader     *kafka.Reader
+	reader     *kafka.Consumer
 	msgHandler kafka_interfaces.MsgHandler
 	Config     Config
 	ctx        context.Context
@@ -42,14 +42,27 @@ func NewGetCreatureType(ctx context.Context, settings_loader settings.SettingsLo
 		panic("unique group setted - setup group name")
 	}
 	consumer.ctx, consumer.cancel = context.WithCancel(ctx)
-	consumer.reader = kafka.NewReader(kafka.ReaderConfig{
-		Brokers: consumer.Config.Kafka.Servers,
-		Topic:   consumer.Config.Kafka.GetCreatureTypes.Topic,
-		GroupID: consumer.Config.Kafka.GetCreatureTypes.GroupID,
-	})
+	var err error
+	consumer.reader, err = kafka.NewConsumer(
+		&kafka.ConfigMap{
+			"bootstrap.servers": consumer.Config.Kafka.Servers,
+			"group.id":          consumer.Config.Kafka.GetCreatureTypes.GroupID,
+		})
+	if err != nil {
+		panic(fmt.Sprintf("Can't create consumer: %s", err))
+	}
+	err = consumer.reader.SubscribeTopics(
+		[]string{
+			consumer.Config.Kafka.GetCreatureTypes.Topic,
+		},
+		nil,
+	)
+	if err != nil {
+		panic(fmt.Sprintf("Consumer can't subscribe to topics: %s", err))
+	}
 	logger.GetInstance().Info(
 		"consumer created",
-		zap.String("config", fmt.Sprintf("%v", consumer.Config)),
+		zap.String("consumer", fmt.Sprintf("%v", consumer)),
 	)
 	return &consumer
 }
@@ -70,25 +83,44 @@ func (consumer *GetCreatureType) Run() {
 			)
 			return
 		default:
-			msg, err := consumer.reader.ReadMessage(consumer.ctx)
-			if err != nil {
-				if consumer.ctx.Err() != nil {
-					return
-				}
+			kafkaEvent := consumer.reader.Poll(100)
+			if kafkaEvent == nil {
+				continue
 			}
+
 			logger.GetInstance().Info(
-				"get message",
-				zap.String("header", fmt.Sprintf("%v", msg.Headers)),
+				"get kafka event",
+				zap.String("event", fmt.Sprintf("%v", kafkaEvent)),
 			)
-			go func() {
-				err := consumer.msgHandler.Handle(consumer.ctx, &msg)
-				if err != nil {
-					logger.GetInstance().Error(
-						"can't handle msg",
-						zap.Error(err),
-					)
-				}
-			}()
+
+			switch event := kafkaEvent.(type) {
+			case *kafka.Message:
+				logger.GetInstance().Info(
+					"get message",
+					zap.String("header", fmt.Sprintf("%v", event.Headers)),
+				)
+				go func() {
+					err := consumer.msgHandler.Handle(consumer.ctx, event)
+					if err != nil {
+						logger.GetInstance().Error(
+							"can't handle msg",
+							zap.Error(err),
+						)
+					} else {
+						logger.GetInstance().Info(
+							"successfully handled event",
+							zap.String("event", fmt.Sprintf("%v", kafkaEvent)),
+						)
+					}
+				}()
+			case kafka.Error:
+				logger.GetInstance().Warn(
+					"get error msg from consumer",
+					zap.String("err_msg", event.Error()),
+				)
+			default:
+				continue
+			}
 		}
 	}
 }

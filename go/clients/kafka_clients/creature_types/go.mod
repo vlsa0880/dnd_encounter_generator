@@ -3,6 +3,7 @@ module github.com/vlsa0880/dnd_encounter_generator/go/clients/kafka_clients/crea
 go 1.23.4
 
 require (
+	github.com/confluentinc/confluent-kafka-go v1.9.2
 	github.com/google/uuid v1.6.0
 	github.com/segmentio/kafka-go v0.4.47
 	github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv v0.0.0

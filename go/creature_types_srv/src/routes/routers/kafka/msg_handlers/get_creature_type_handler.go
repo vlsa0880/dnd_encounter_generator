@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/segmentio/kafka-go"
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 	data_handlers_interfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/data_handlers/interfaces"
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
@@ -15,7 +15,7 @@ import (
 
 type Config struct {
 	Kafka struct {
-		Servers           []string
+		Servers           string
 		ProduceTimeout    time.Duration
 		SendCreatureTypes struct {
 			Topic string
@@ -26,7 +26,7 @@ type Config struct {
 type GetCreatureTypeMsgHandler struct {
 	config      Config
 	dataHandler data_handlers_interfaces.DataHandler
-	writer      *kafka.Writer
+	writer      *kafka.Producer
 }
 
 func NewCreatureTypeHandler(settingsLoader settings.SettingsLoader, dataHandler data_handlers_interfaces.DataHandler) *GetCreatureTypeMsgHandler {
@@ -44,11 +44,14 @@ func NewCreatureTypeHandler(settingsLoader settings.SettingsLoader, dataHandler 
 		panic(fmt.Errorf("can't load handler config: %s", err))
 	}
 
-	handler.writer = kafka.NewWriter(
-		kafka.WriterConfig{
-			Brokers: handler.config.Kafka.Servers,
-			Topic:   handler.config.Kafka.SendCreatureTypes.Topic,
+	var err error
+	handler.writer, err = kafka.NewProducer(
+		&kafka.ConfigMap{
+			"bootstrap.servers": handler.config.Kafka.Servers,
 		})
+	if err != nil {
+		panic(fmt.Sprintf("Can't create producer: %s", err))
+	}
 	logger.GetInstance().Info("handler successfully created")
 	return handler
 }
@@ -73,6 +76,10 @@ func (handler *GetCreatureTypeMsgHandler) Handle(ctx context.Context, msg *kafka
 		zap.String("types", fmt.Sprintf("%v", typesData)),
 	)
 	outMsg := kafka.Message{
+		TopicPartition: kafka.TopicPartition{
+			Topic:     &handler.config.Kafka.SendCreatureTypes.Topic,
+			Partition: kafka.PartitionAny,
+		},
 		Value:   typesData,
 		Headers: msg.Headers,
 	}
@@ -80,10 +87,9 @@ func (handler *GetCreatureTypeMsgHandler) Handle(ctx context.Context, msg *kafka
 		"trying to send message",
 		zap.String("msg", fmt.Sprintf("%v", outMsg)),
 	)
-	err = handler.writer.WriteMessages(
-		handleCtx,
-		outMsg,
+	err = handler.writer.Produce(
+		&outMsg,
+		nil,
 	)
-	logger.GetInstance().Info("message successfully sended")
 	return err
 }

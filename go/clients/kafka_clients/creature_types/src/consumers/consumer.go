@@ -4,8 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sync/atomic"
+	"time"
 
-	"github.com/segmentio/kafka-go"
+	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	creature_types_data "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/creature_types/data"
@@ -16,7 +19,7 @@ import (
 type ReaderConfig struct {
 	Kafka struct {
 		External struct {
-			Servers []string
+			Servers string
 		}
 		SendCreatureTypes struct {
 			Topic string
@@ -25,29 +28,45 @@ type ReaderConfig struct {
 }
 
 type GetCreatureTypeConsumer struct {
-	config ReaderConfig
-	reader *kafka.Reader
+	config         ReaderConfig
+	reader         *kafka.Consumer
+	readyToProcess atomic.Bool
 }
 
 func NewReader(settingsLoader isettings.SettingsLoader) *GetCreatureTypeConsumer {
 	reader := GetCreatureTypeConsumer{}
-	if err := settingsLoader.Load(&reader.config); err != nil {
+	reader.readyToProcess.Store(false)
+	var err error
+	if err = settingsLoader.Load(&reader.config); err != nil {
 		panic(fmt.Errorf("can't load handler config: %s", err))
 	}
-	reader.reader = kafka.NewReader(kafka.ReaderConfig{
-		Brokers:     reader.config.Kafka.External.Servers,
-		Topic:       reader.config.Kafka.SendCreatureTypes.Topic,
-		Partition:   0,
-		StartOffset: 0,
-	})
+	reader.reader, err = kafka.NewConsumer(
+		&kafka.ConfigMap{
+			"bootstrap.servers": reader.config.Kafka.External.Servers,
+			"group.id":          "test_get_creature_type_group_" + uuid.NewString(),
+		})
+	if err != nil {
+		panic(fmt.Sprintf("Can't create consumer: %s", err))
+	}
+	err = reader.reader.Subscribe(
+		reader.config.Kafka.SendCreatureTypes.Topic,
+		reader.rebalanceCallback,
+	)
+	if err != nil {
+		panic(fmt.Sprintf("Consumer can't subscribe to topics: %s", err))
+	}
 	logger.GetInstance().Info(
-		"reader created",
-		zap.String("reader", fmt.Sprintf("%v", reader)),
+		"consumer created",
 	)
 	return &reader
 }
 
 func (consumer *GetCreatureTypeConsumer) Run(ctx context.Context, finishChan chan<- struct{}) {
+	defer consumer.reader.Close()
+	logger.GetInstance().Info(
+		"consumer started",
+		zap.String("config", fmt.Sprintf("%v", consumer)),
+	)
 	for {
 		select {
 		case <-ctx.Done():
@@ -56,28 +75,90 @@ func (consumer *GetCreatureTypeConsumer) Run(ctx context.Context, finishChan cha
 			)
 			return
 		default:
-			msg, err := consumer.reader.ReadMessage(ctx)
-			if err != nil {
-				if ctx.Err() != nil {
-					return
-				}
+			kafkaEvent := consumer.reader.Poll(1)
+			if kafkaEvent == nil {
+				continue
 			}
+
 			logger.GetInstance().Info(
-				"get msg",
-				zap.String("msg", fmt.Sprintf("%v", msg)),
-				zap.String("msg.value", fmt.Sprintf("%v", msg.Value)),
-				zap.String("msg.topic", fmt.Sprintf("%v", msg.Topic)),
+				"get kafka event",
+				zap.String("event", fmt.Sprintf("%v", kafkaEvent)),
 			)
-			var types creature_types_data.Data
-			if err := json.Unmarshal(msg.Value, &types); err != nil {
-				panic(fmt.Sprintf("can't read message: %s", err))
+
+			switch event := kafkaEvent.(type) {
+			case *kafka.Message:
+				consumer.processMessage(finishChan, event)
+				return
+			case kafka.Error:
+				logger.GetInstance().Warn(
+					"get error msg from consumer",
+					zap.String("err_msg", event.Error()),
+				)
+			default:
+				continue
 			}
-			logger.GetInstance().Debug(
-				"msg processed",
-				zap.String("types", fmt.Sprintf("%v", types)),
-			)
-			finishChan <- struct{}{}
-			return
 		}
 	}
+}
+
+func (consumer *GetCreatureTypeConsumer) WaitConsumerReady(ctx context.Context) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("Consumer didn't connect to topic in time")
+		default:
+			if consumer.readyToProcess.Load() {
+				return nil
+			}
+			time.Sleep(time.Second)
+		}
+	}
+}
+
+func (consumer *GetCreatureTypeConsumer) processMessage(finishChan chan<- struct{}, msg *kafka.Message) {
+	logger.GetInstance().Info(
+		"get msg",
+		zap.String("msg", fmt.Sprintf("%v", msg)),
+		zap.String("msg.value", fmt.Sprintf("%v", msg.Value)),
+		zap.String("msg.topic", fmt.Sprintf("%v", msg.TopicPartition.Topic)),
+	)
+	var types creature_types_data.Data
+	if err := json.Unmarshal(msg.Value, &types); err != nil {
+		panic(fmt.Sprintf("can't read message: %s", err))
+	}
+	logger.GetInstance().Debug(
+		"msg processed",
+		zap.String("types", fmt.Sprintf("%v", types)),
+	)
+	finishChan <- struct{}{}
+}
+
+func (consumer *GetCreatureTypeConsumer) setConsumerReady(readiness bool) {
+	consumer.readyToProcess.Store(readiness)
+}
+
+func (consumer *GetCreatureTypeConsumer) rebalanceCallback(eventConsumer *kafka.Consumer, incomeEvent kafka.Event) error {
+	switch event := incomeEvent.(type) {
+	case kafka.AssignedPartitions:
+		fmt.Println("Partitions assigned:", event.Partitions)
+		if err := eventConsumer.Assign(event.Partitions); err != nil {
+			logger.GetInstance().Error(
+				"can't assign consumer to new partitins",
+				zap.Error(err),
+			)
+		} else {
+			consumer.setConsumerReady(true)
+		}
+	case kafka.RevokedPartitions:
+		fmt.Println("Partitions revoked:", event.Partitions)
+		if err := eventConsumer.Assign(event.Partitions); err != nil {
+			logger.GetInstance().Error(
+				"can't unassign partitions from consumer",
+				zap.Error(err),
+			)
+		} else {
+			consumer.setConsumerReady(false)
+		}
+	}
+	return nil
 }

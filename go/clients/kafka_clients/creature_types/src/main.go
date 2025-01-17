@@ -8,6 +8,7 @@ import (
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/env"
 	isettings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
+	"go.uber.org/zap"
 
 	consumers "github.com/vlsa0880/dnd_encounter_generator/go/clients/kafka_clients/creature_types/src/consumers"
 	producers "github.com/vlsa0880/dnd_encounter_generator/go/clients/kafka_clients/creature_types/src/producers"
@@ -27,6 +28,13 @@ func main() {
 	defer cancel()
 	consumer := consumers.NewReader(settingsLoader)
 	go consumer.Run(ctx, finishChan)
+	if err := consumer.WaitConsumerReady(ctx); err != nil {
+		logger.GetInstance().Error(
+			"consumer catch error while connecting to wait group",
+			zap.Error(err),
+		)
+		return
+	}
 
 	producer := producers.NewWriter(settingsLoader)
 	if err := producer.Write(ctx); err != nil {

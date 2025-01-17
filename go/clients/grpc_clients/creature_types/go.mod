@@ -2,14 +2,17 @@ module github.com/vlsa0880/dnd_encounter_generator/go/clients/kafka_clients/crea
 
 go 1.23.2
 
-require google.golang.org/grpc v1.69.2
+require (
+	go.uber.org/zap v1.27.0
+	google.golang.org/grpc v1.69.2
+)
 
 require (
+	github.com/confluentinc/confluent-kafka-go v1.9.2 // indirect
 	github.com/creasty/defaults v1.8.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.2.0 // indirect
 	github.com/vrischmann/envconfig v1.3.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	go.uber.org/zap v1.27.0 // indirect
 )
 
 require (

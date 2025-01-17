@@ -1,0 +1,26 @@
+services:
+  elastic:
+    image: elasticsearch:8.16.2
+    ports:
+      - "9200:9200"
+    env_file:
+      - ../env/elastic_settings.env
+    volumes:
+      - ../../data/elastic_data:/usr/share/elasticsearch/data
+    user: "${UID}:${GID}"
+    healthcheck:
+      test: curl -s http://elastic:9200 >/dev/null || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 50
+
+  kibana:
+    image: kibana:8.16.2
+    container_name: kibana
+    env_file:
+      - ../env/kibana_settings.env
+    ports:
+      - "5601:5601"
+    depends_on:
+      elastic:
+        condition: service_healthy

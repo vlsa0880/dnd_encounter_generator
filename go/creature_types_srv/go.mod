@@ -3,6 +3,7 @@ module github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv
 go 1.23.2
 
 require (
+	github.com/confluentinc/confluent-kafka-go v1.9.2
 	github.com/creasty/defaults v1.8.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/google/uuid v1.6.0
@@ -18,6 +19,7 @@ require (
 	google.golang.org/protobuf v1.35.1
 	gorm.io/driver/postgres v1.5.11
 	gorm.io/gorm v1.25.12
+	moul.io/zapgorm2 v1.3.0
 )
 
 require (
@@ -66,5 +68,4 @@ require (
 	golang.org/x/text v0.19.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241015192408-796eee8c2d53 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	moul.io/zapgorm2 v1.3.0 // indirect
 )

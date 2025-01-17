@@ -10,6 +10,7 @@ import (
 	gen "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers/grpc/gen"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/env"
 	isettings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
+	"go.uber.org/zap"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -64,6 +65,10 @@ func createConnection(loader *settings.EnvLoader) *grpc.ClientConn {
 func main() {
 	settingsLoader := initSettingsLoader()
 	clientConfig := getClientConfig(settingsLoader)
+	logger.GetInstance().Info(
+		"client config created",
+		zap.String("config", fmt.Sprintf("%v", clientConfig)),
+	)
 
 	conn := createConnection(settingsLoader)
 	defer conn.Close()
