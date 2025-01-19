@@ -1,20 +1,6 @@
 # Creatures service
 
-## Running localy
-### Postgres db launch
-```sh
-./run_psql_docker.sh
-```
-
-### Service build
-```sh
-source local/env/.env
-export $(cut -d= -f1 local/env/.env)
-cd go/creature_types_srv/
-mkdir -p bin && go build -C bin/ ../src/main.go && ./bin/main
-```
-
-## Running by docker compose
+## Running with docker compose
 ### Rebuild only on src/ files change
 ```sh
 ./compose_run_watch.sh
@@ -36,13 +22,27 @@ or
 ./compose_run.sh
 ```
 
+## Running localy
+### Postgres db launch
+```sh
+./run_psql_docker.sh
+```
+
+### Service build
+```sh
+source local/env/.env
+export $(cut -d= -f1 local/env/.env)
+cd go/creature_types_srv/
+mkdir -p bin && go build -C bin/ ../src/main.go && ./bin/main
+```
+
 ## Request available creature types
-### When running with docker
+### Docker
 ```sh
 curl "0.0.0.0:8088/creatures_data/types"
 ```
 
-### When running localy
+### Localy
 ```sh
 curl "localhost:8088/creatures_data/types"
 ```
@@ -66,9 +66,9 @@ After running docker compose & grpc server started:
 mkdir -p bin && go build -o bin/client src/main.go && ./run_client_docker.sh
 ```
 
-Or localy, after running psql container & get_creature_srv:
+### Same for kafka, except for folder
 ```sh
-mkdir -p bin && go build -o bin/client src/main.go && ./run_client_localy.sh
+go/clients/kafka_clients/creature_types
 ```
 
 ## Tests run
