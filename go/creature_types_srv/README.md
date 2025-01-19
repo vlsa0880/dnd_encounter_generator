@@ -1,50 +1,14 @@
 # Creatures service
 
 ## Running with docker compose
-### Rebuild only on src/ files change
-```sh
-./compose_run_watch.sh
-```
-### Forced full rebuild
-```sh
-export UID=$(id -u)
-export GID=$(id -g)
-docker compose  \
-    -f docker/compose/webapp.yaml \
-    -f docker/compose/elastic_server.yaml \
-    -f docker/compose/kafka_server.yaml \
-    -f docker/compose/postgres.yaml \
-    -f docker/compose/prometheus.yaml \
-    up --build --force-recreate --remove-orphans
-```
-or
 ```sh
 ./compose_run.sh
-```
-
-## Running localy
-### Postgres db launch
-```sh
-./run_psql_docker.sh
-```
-
-### Service build
-```sh
-source local/env/.env
-export $(cut -d= -f1 local/env/.env)
-cd go/creature_types_srv/
-mkdir -p bin && go build -C bin/ ../src/main.go && ./bin/main
 ```
 
 ## Request available creature types
 ### Docker
 ```sh
 curl "0.0.0.0:8088/creatures_data/types"
-```
-
-### Localy
-```sh
-curl "localhost:8088/creatures_data/types"
 ```
 
 ## GRPC
