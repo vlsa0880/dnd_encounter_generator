@@ -14,9 +14,6 @@ type config struct {
 		Log            struct {
 			Topic string
 		}
-		Sync struct {
-			TimeoutMS int
-		}
 	}
 }
 

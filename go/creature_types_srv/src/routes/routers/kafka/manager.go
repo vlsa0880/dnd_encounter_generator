@@ -61,10 +61,8 @@ func (manager *Manager) setupDataHandler(dataHandler data_handlers_interfaces.Da
 	var consumerGetCreatureTypes interfaces.Consumer = consumers.NewGetCreatureType(
 		manager.ctx,
 		manager.settingsLoader,
+		handlerGetCreatureType,
 	)
-	if err := consumerGetCreatureTypes.SetupMsgHandler(handlerGetCreatureType); err != nil {
-		return err
-	}
 	manager.consumers = append(manager.consumers, consumerGetCreatureTypes)
 	return nil
 }
