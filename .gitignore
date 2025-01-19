@@ -1,5 +1,3 @@
-go/creature_types_srv/data/psql_data/
-go/creature_types_srv/data/elastic_data/
 .vscode/
 go/pkg/
 go/bin/

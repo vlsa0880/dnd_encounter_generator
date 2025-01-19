@@ -1,0 +1,11 @@
+services:
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: loki
+    ports:
+      - 3100:3100
+    user: "${UID}:${GID}"
+    volumes:
+      - ../../configs/loki/config.yaml:/etc/loki/config.yaml
+      - ../../data/loki:/loki
+    command: -config.file=/etc/loki/config.yaml

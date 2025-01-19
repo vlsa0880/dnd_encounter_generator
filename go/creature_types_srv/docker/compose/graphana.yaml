@@ -1,0 +1,14 @@
+services:
+  grafana:
+    image: grafana/grafana:11.4.0
+    container_name: grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    user: "${UID}:${GID}"
+    ports:
+      - 3000:3000
+    volumes:
+      - ../../data/graphana:/var/lib/graphana
+    depends_on:
+      - prometheus

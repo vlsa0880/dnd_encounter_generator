@@ -7,8 +7,6 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      elastic:
-        condition: service_healthy
     build:
       context: ../../
       dockerfile: docker/builder/Dockerfile
@@ -17,7 +15,7 @@ services:
         - action: rebuild
           path: ./src
     ports:
-      - "8088:8088"
-      - "44044:44044"
+      - 8088:8088
+      - 44044:44044
     env_file:
       - ../env/webapp.env

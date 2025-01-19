@@ -1,0 +1,19 @@
+server:
+  http_listen_port: 9080
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: "kafka-logs"
+    kafka:
+      brokers:
+        - "kafka:9092"
+      topics:
+        - "logging"
+      group_id: "promtail_consumer"
+      labels:
+        job: "kafka-logs"
