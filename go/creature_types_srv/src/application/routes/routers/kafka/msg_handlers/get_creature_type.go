@@ -7,16 +7,19 @@ import (
 	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routes/routers/kafka/utils"
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
 	dbinterfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/use_cases/interfaces"
 	"go.uber.org/zap"
 )
 
-type Config struct {
+type config struct {
 	Kafka struct {
-		Servers           string
-		ProduceTimeout    time.Duration
+		Servers string
+		Handle  struct {
+			Timeout time.Duration
+		}
 		SendCreatureTypes struct {
 			Topic string
 		}
@@ -24,9 +27,9 @@ type Config struct {
 }
 
 type GetCreatureTypeMsgHandler struct {
-	config        Config
+	config        config
 	creatureTypes dbinterfaces.CreatureTypes
-	writer        *kafka.Producer
+	producer      *kafka.Producer
 }
 
 func NewCreatureTypeHandler(settingsLoader settings.SettingsLoader, creatureTypes dbinterfaces.CreatureTypes) *GetCreatureTypeMsgHandler {
@@ -45,20 +48,30 @@ func NewCreatureTypeHandler(settingsLoader settings.SettingsLoader, creatureType
 	}
 
 	var err error
-	handler.writer, err = kafka.NewProducer(
+	handler.producer, err = kafka.NewProducer(
 		&kafka.ConfigMap{
 			"bootstrap.servers": handler.config.Kafka.Servers,
 		})
 	if err != nil {
 		panic(fmt.Sprintf("Can't create producer: %s", err))
 	}
+
+	if err = utils.CreateTopicByProducer(
+		context.Background(),
+		settingsLoader,
+		handler.producer,
+		&handler.config.Kafka.SendCreatureTypes.Topic,
+	); err != nil {
+		panic(fmt.Sprintf("can't create topic '%s': %s", handler.config.Kafka.SendCreatureTypes.Topic, err))
+	}
 	logger.GetInstance().Info("handler successfully created")
 	return handler
 }
 
 func (handler *GetCreatureTypeMsgHandler) Handle(ctx context.Context, msg *kafka.Message) error {
-	handleCtx, cancel := context.WithTimeout(ctx, handler.config.Kafka.ProduceTimeout)
+	handleCtx, cancel := context.WithTimeout(ctx, handler.config.Kafka.Handle.Timeout)
 	defer cancel()
+
 	types, err := handler.creatureTypes.GetCreatureTypes(handleCtx)
 	if err != nil {
 		return fmt.Errorf("can't get creature types: %w", err)
@@ -67,6 +80,7 @@ func (handler *GetCreatureTypeMsgHandler) Handle(ctx context.Context, msg *kafka
 		"types to send",
 		zap.String("types", fmt.Sprintf("%v", types)),
 	)
+
 	typesData, err := json.Marshal(types)
 	if err != nil {
 		return fmt.Errorf("can't transform data for sending: %s", err)
@@ -75,6 +89,7 @@ func (handler *GetCreatureTypeMsgHandler) Handle(ctx context.Context, msg *kafka
 		"types data to send",
 		zap.String("types", fmt.Sprintf("%v", typesData)),
 	)
+
 	outMsg := kafka.Message{
 		TopicPartition: kafka.TopicPartition{
 			Topic:     &handler.config.Kafka.SendCreatureTypes.Topic,
@@ -84,12 +99,31 @@ func (handler *GetCreatureTypeMsgHandler) Handle(ctx context.Context, msg *kafka
 		Headers: msg.Headers,
 	}
 	logger.GetInstance().Info(
-		"trying to send message",
+		"trying to produce message",
 		zap.String("msg", fmt.Sprintf("%v", outMsg)),
 	)
-	err = handler.writer.Produce(
-		&outMsg,
-		nil,
-	)
+
+	produceConfirmation := make(chan kafka.Event)
+	if err = handler.producer.Produce(&outMsg, produceConfirmation); err != nil {
+		return fmt.Errorf(
+			"error trying to produce msg '%v' to topic '%s': %w",
+			&outMsg,
+			handler.config.Kafka.SendCreatureTypes.Topic,
+			err,
+		)
+	}
+
+	select {
+	case <-produceConfirmation:
+		logger.GetInstance().Info(
+			"msg produced successfully",
+			zap.String("msg", fmt.Sprintf("%v", outMsg)),
+		)
+	case <-ctx.Done():
+		logger.GetInstance().Error(
+			"can't produce msg in time cause of timeout",
+			zap.String("handler", fmt.Sprintf("%v", handler)),
+		)
+	}
 	return err
 }

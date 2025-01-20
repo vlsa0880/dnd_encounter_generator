@@ -7,6 +7,7 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/google/uuid"
 	ikafka "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routes/routers/kafka/interfaces"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routes/routers/kafka/utils"
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
 	"go.uber.org/zap"
@@ -24,7 +25,7 @@ type config struct {
 }
 
 type GetCreatureType struct {
-	reader     *kafka.Consumer
+	consumer   *kafka.Consumer
 	msgHandler ikafka.MsgHandler
 	config     config
 	ctx        context.Context
@@ -37,6 +38,7 @@ func NewGetCreatureType(ctx context.Context, settingsLoader settings.SettingsLoa
 	} else if settingsLoader == nil {
 		panic("bad settings loader")
 	}
+
 	consumer := GetCreatureType{}
 	consumer.msgHandler = handler
 	if err := settingsLoader.Load(&consumer.config); err != nil {
@@ -48,8 +50,9 @@ func NewGetCreatureType(ctx context.Context, settingsLoader settings.SettingsLoa
 		panic("unique group setted - setup group name")
 	}
 	consumer.ctx, consumer.cancel = context.WithCancel(ctx)
+
 	var err error
-	consumer.reader, err = kafka.NewConsumer(
+	consumer.consumer, err = kafka.NewConsumer(
 		&kafka.ConfigMap{
 			"bootstrap.servers": consumer.config.Kafka.Servers,
 			"group.id":          consumer.config.Kafka.GetCreatureTypes.GroupID,
@@ -57,7 +60,17 @@ func NewGetCreatureType(ctx context.Context, settingsLoader settings.SettingsLoa
 	if err != nil {
 		panic(fmt.Sprintf("Can't create consumer: %s", err))
 	}
-	err = consumer.reader.SubscribeTopics(
+
+	if err = utils.CreateTopicByConsumer(
+		ctx,
+		settingsLoader,
+		consumer.consumer,
+		&consumer.config.Kafka.GetCreatureTypes.Topic,
+	); err != nil {
+		panic(fmt.Sprintf("can't create topic '%s': %s", consumer.config.Kafka.GetCreatureTypes.Topic, err))
+	}
+
+	err = consumer.consumer.SubscribeTopics(
 		[]string{
 			consumer.config.Kafka.GetCreatureTypes.Topic,
 		},
@@ -89,7 +102,7 @@ func (consumer *GetCreatureType) Run() {
 			)
 			return
 		default:
-			event := consumer.reader.Poll(100)
+			event := consumer.consumer.Poll(100)
 			if event == nil {
 				continue
 			}
@@ -105,7 +118,7 @@ func (consumer *GetCreatureType) Run() {
 }
 
 func (consumer *GetCreatureType) Stop() {
-	defer consumer.reader.Close()
+	defer consumer.consumer.Close()
 	consumer.cancel()
 }
 
@@ -140,7 +153,7 @@ func (consumer *GetCreatureType) handleEvent(event kafka.Event) {
 }
 
 func (consumer *GetCreatureType) isValid() error {
-	if consumer.reader == nil {
+	if consumer.consumer == nil {
 		return fmt.Errorf("bad reader")
 	} else if consumer.msgHandler == nil {
 		return fmt.Errorf("bad msg handler")

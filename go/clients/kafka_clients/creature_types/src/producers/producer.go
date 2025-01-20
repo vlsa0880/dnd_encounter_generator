@@ -3,7 +3,6 @@ package kafka_client_test_producer
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/google/uuid"
@@ -18,7 +17,6 @@ type WriterConfig struct {
 		External struct {
 			Servers string
 		}
-		ProduceTimeout   time.Duration
 		GetCreatureTypes struct {
 			Topic string
 		}
@@ -68,12 +66,25 @@ func (producer *GetCreatureTypeProducer) Write(ctx context.Context) error {
 		"msg sended",
 		zap.String("msg", fmt.Sprintf("%v", msg)),
 	)
+	produceConfirmation := make(chan kafka.Event)
 	err := producer.writer.Produce(
 		&msg,
-		nil,
+		produceConfirmation,
 	)
 	logger.GetInstance().Info(
 		"request sended",
 	)
+	select {
+	case <-produceConfirmation:
+		logger.GetInstance().Info(
+			"msg produced successfully",
+			zap.String("msg", fmt.Sprintf("%v", msg)),
+		)
+	case <-ctx.Done():
+		logger.GetInstance().Error(
+			"can't produce msg in time cause of timeout",
+			zap.String("handler", fmt.Sprintf("%v", producer)),
+		)
+	}
 	return err
 }

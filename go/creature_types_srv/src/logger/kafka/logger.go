@@ -9,9 +9,8 @@ import (
 
 type config struct {
 	Kafka struct {
-		Servers        string
-		ProduceTimeout string
-		Log            struct {
+		Servers string
+		Log     struct {
 			Topic string
 		}
 	}
