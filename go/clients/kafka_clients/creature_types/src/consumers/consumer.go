@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	creature_types_data "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/creature_types/data"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/domain/entities"
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 	isettings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
 )
@@ -122,7 +122,7 @@ func (consumer *GetCreatureTypeConsumer) processMessage(finishChan chan<- struct
 		zap.String("msg.value", fmt.Sprintf("%v", msg.Value)),
 		zap.String("msg.topic", fmt.Sprintf("%v", msg.TopicPartition.Topic)),
 	)
-	var types creature_types_data.Data
+	var types entities.CreatureTypes
 	if err := json.Unmarshal(msg.Value, &types); err != nil {
 		panic(fmt.Sprintf("can't read message: %s", err))
 	}

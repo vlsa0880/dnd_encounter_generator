@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	irouter "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routes/routers/grpc"
+	gen "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routes/routers/grpc/gen"
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
-	router "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers/grpc"
-	gen "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/routes/routers/grpc/gen"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/env"
 	isettings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
 	"go.uber.org/zap"
@@ -27,8 +27,8 @@ func initSettingsLoader() *settings.EnvLoader {
 	return loader
 }
 
-func getServerConfig(loader *settings.EnvLoader) *router.Config {
-	var config router.Config
+func getServerConfig(loader *settings.EnvLoader) *irouter.Config {
+	var config irouter.Config
 	if err := loader.Load(&config); err != nil {
 		panic(fmt.Errorf("Can't load grpc server settings: %s", err))
 	}

@@ -1,4 +1,4 @@
-package kafka_logger
+package kafka
 
 import (
 	"fmt"
@@ -17,16 +17,16 @@ type config struct {
 	}
 }
 
-type KafkaLogSyncer struct {
+type LogSyncer struct {
 	producer *kafka.Producer
 	config   *config
 }
 
-func NewKafkaSync(settingsLoader settings.SettingsLoader) (*KafkaLogSyncer, error) {
+func New(settingsLoader settings.SettingsLoader) (*LogSyncer, error) {
 	if settingsLoader == nil {
 		return nil, fmt.Errorf("Bad settings loader")
 	}
-	syncer := KafkaLogSyncer{}
+	syncer := LogSyncer{}
 	if err := settingsLoader.Load(&syncer.config); err != nil {
 		return nil, fmt.Errorf("Can't load settings kafka log syncer config: %w", err)
 	}
@@ -42,7 +42,7 @@ func NewKafkaSync(settingsLoader settings.SettingsLoader) (*KafkaLogSyncer, erro
 	return &syncer, nil
 }
 
-func (syncer *KafkaLogSyncer) Write(msgData []byte) (int, error) {
+func (syncer *LogSyncer) Write(msgData []byte) (int, error) {
 	err := syncer.producer.Produce(
 		&kafka.Message{
 			TopicPartition: kafka.TopicPartition{

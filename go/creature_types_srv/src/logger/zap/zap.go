@@ -5,7 +5,7 @@ import (
 	"os"
 	"sync"
 
-	kafka_logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/kafka"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/kafka"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
 	settings_data "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/manager"
 
@@ -66,7 +66,7 @@ func setupLogger(config *Config, settingsLoader settings.SettingsLoader) *zap.Lo
 }
 
 func newDev(settingsLoader settings.SettingsLoader) *zap.Logger {
-	kafkaSyncer, err := kafka_logger.NewKafkaSync(settingsLoader)
+	kafkaSyncer, err := kafka.New(settingsLoader)
 	if err != nil {
 		panic(fmt.Sprintf("Can't create kafka log syncer: %s", err))
 	}
