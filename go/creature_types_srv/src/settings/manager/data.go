@@ -7,12 +7,6 @@ import (
 	"github.com/creasty/defaults"
 )
 
-const (
-	EnvLocal = "local"
-	EnvDev   = "dev"
-	EnvProd  = "prod"
-)
-
 type Data struct {
 	Http          `json:"http" env:", prefix=HTTP_"`
 	CreatureTypes `json:"creature_types" env:", prefix=CREATURE_TYPES_"`

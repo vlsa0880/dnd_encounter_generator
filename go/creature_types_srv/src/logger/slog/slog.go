@@ -5,8 +5,8 @@ import (
 	"os"
 	"sync"
 
-	settings_data "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/manager"
 	settings_manager "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/manager/implementations"
+	envdata "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/utils/data"
 )
 
 var (
@@ -29,17 +29,17 @@ func setupLogger() *slog.Logger {
 	var log *slog.Logger
 
 	switch settings_manager.GetInstance().GetSettings().Global.EnvType {
-	case settings_data.EnvLocal:
+	case envdata.Local.String():
 		log = slog.New(
 			slog.NewTextHandler(
 				os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug},
 			))
-	case settings_data.EnvDev:
+	case envdata.Dev.String():
 		log = slog.New(
 			slog.NewJSONHandler(
 				os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug},
 			))
-	case settings_data.EnvProd:
+	case envdata.Prod.String():
 		log = slog.New(
 			slog.NewJSONHandler(
 				os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo},

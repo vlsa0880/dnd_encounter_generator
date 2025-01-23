@@ -7,7 +7,7 @@ import (
 
 	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/kafka"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
-	settings_data "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/manager"
+	envdata "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/utils/data"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -48,27 +48,27 @@ func setupLogger(config *Config, settingsLoader settings.SettingsLoader) *zap.Lo
 
 	var err error
 	switch config.Global.EnvType {
-	case settings_data.EnvLocal:
+	case envdata.Local.String():
 		log, err = zap.NewDevelopment()
-	case settings_data.EnvDev:
-		log = newDev(settingsLoader)
-	case settings_data.EnvProd:
+	case envdata.Dev.String():
+		log, err = newDev(settingsLoader)
+	case envdata.Prod.String():
 		log, err = zap.NewProduction()
 	default:
 		panic("No environment type specified")
 	}
 
 	if err != nil {
-		panic("Can't create logger instance")
+		panic(fmt.Errorf("Can't create logger instance: %w", err))
 	}
 
 	return log
 }
 
-func newDev(settingsLoader settings.SettingsLoader) *zap.Logger {
+func newDev(settingsLoader settings.SettingsLoader) (*zap.Logger, error) {
 	kafkaSyncer, err := kafka.New(settingsLoader)
 	if err != nil {
-		panic(fmt.Sprintf("Can't create kafka log syncer: %s", err))
+		return nil, fmt.Errorf("Can't create kafka log syncer: %w", err)
 	}
 	encoderConfig := zapcore.EncoderConfig{
 		MessageKey:   "message",
@@ -91,5 +91,5 @@ func newDev(settingsLoader settings.SettingsLoader) *zap.Logger {
 			zapcore.DebugLevel,
 		),
 	)
-	return zap.New(core, zap.AddCaller())
+	return zap.New(core, zap.AddCaller()), nil
 }
