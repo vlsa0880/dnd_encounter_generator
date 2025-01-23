@@ -62,6 +62,9 @@ func NewReader(settingsLoader isettings.SettingsLoader) *GetCreatureTypeConsumer
 }
 
 func (consumer *GetCreatureTypeConsumer) Run(ctx context.Context, finishChan chan<- struct{}) {
+	if finishChan == nil {
+		panic("bad result channel passed")
+	}
 	defer consumer.reader.Close()
 	logger.GetInstance().Info(
 		"consumer started",
@@ -116,6 +119,9 @@ func (consumer *GetCreatureTypeConsumer) WaitConsumerReady(ctx context.Context) 
 }
 
 func (consumer *GetCreatureTypeConsumer) processMessage(finishChan chan<- struct{}, msg *kafka.Message) {
+	if finishChan == nil {
+		panic("bad result channel passed")
+	}
 	logger.GetInstance().Info(
 		"get msg",
 		zap.String("msg", fmt.Sprintf("%v", msg)),

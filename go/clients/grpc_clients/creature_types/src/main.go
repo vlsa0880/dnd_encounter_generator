@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	irouter "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routes/routers/grpc"
-	gen "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routes/routers/grpc/gen"
+	irouter "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/grpc"
+	gen "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/grpc/gen"
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/env"
 	isettings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"

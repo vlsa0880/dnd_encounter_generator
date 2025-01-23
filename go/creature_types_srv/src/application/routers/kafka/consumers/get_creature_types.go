@@ -6,8 +6,8 @@ import (
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/google/uuid"
-	ikafka "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routes/routers/kafka/interfaces"
-	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routes/routers/kafka/utils"
+	ikafka "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/kafka/interfaces"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/kafka/utils"
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
 	"go.uber.org/zap"

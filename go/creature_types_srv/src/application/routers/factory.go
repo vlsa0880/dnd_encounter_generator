@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routes/interfaces"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/interfaces"
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
 	dbinterfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/use_cases/interfaces"
 
-	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routes/routers/gin"
-	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routes/routers/grpc"
-	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routes/routers/kafka"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/gin"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/grpc"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/kafka"
 
 	"go.uber.org/zap"
 )

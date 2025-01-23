@@ -6,7 +6,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
-	gen "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routes/routers/grpc/gen"
+	gen "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/grpc/gen"
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 	dbinterfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/use_cases/interfaces"
 )

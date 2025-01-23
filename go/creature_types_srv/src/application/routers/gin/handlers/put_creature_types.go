@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 
-	json_validators "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routes/routers/gin/validators/json"
+	json_validators "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/gin/validators/json"
 	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/domain/entities"
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 	dbinterfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/use_cases/interfaces"

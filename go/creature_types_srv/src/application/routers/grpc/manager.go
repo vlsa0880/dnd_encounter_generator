@@ -3,7 +3,7 @@ package grpc
 import (
 	"fmt"
 
-	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routes/routers/grpc/services"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/grpc/services"
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
 	dbinterfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/use_cases/interfaces"

@@ -1,1 +1,1 @@
-GO_GRPC_PATH=go/creature_types_srv/src/routes/routers/grpc/ bash -c 'protoc --proto_path $GO_GRPC_PATH/proto $GO_GRPC_PATH/proto/* --go_out=$GO_GRPC_PATH/gen --go-grpc_out=$GO_GRPC_PATH/gen --go_opt=paths=source_relative --go-grpc_opt=paths=source_relative'
+GO_GRPC_PATH=go/creature_types_srv/src/routers/grpc/ bash -c 'protoc --proto_path $GO_GRPC_PATH/proto $GO_GRPC_PATH/proto/* --go_out=$GO_GRPC_PATH/gen --go-grpc_out=$GO_GRPC_PATH/gen --go_opt=paths=source_relative --go-grpc_opt=paths=source_relative'

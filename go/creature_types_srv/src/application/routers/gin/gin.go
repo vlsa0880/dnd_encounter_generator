@@ -3,9 +3,9 @@ package gin
 import (
 	"fmt"
 
-	handlers "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routes/routers/gin/handlers"
-	gin_middleware "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routes/routers/gin/middleware"
-	gin_middleware_prometheus "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routes/routers/gin/middleware/prometheus"
+	handlers "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/gin/handlers"
+	gin_middleware "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/gin/middleware"
+	gin_middleware_prometheus "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/gin/middleware/prometheus"
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
 	dbinterfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/use_cases/interfaces"

@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routes/routers/kafka/consumers"
-	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routes/routers/kafka/interfaces"
-	msghandlers "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routes/routers/kafka/msg_handlers"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/kafka/consumers"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/kafka/interfaces"
+	msghandlers "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/kafka/msg_handlers"
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
 	dbinterfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/use_cases/interfaces"

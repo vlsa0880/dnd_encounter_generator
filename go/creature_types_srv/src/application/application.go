@@ -6,8 +6,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	irouter "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routes/interfaces"
-	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routes/routers"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers"
+	irouter "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/interfaces"
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/env"
 	isettings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
