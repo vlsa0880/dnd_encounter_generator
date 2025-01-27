@@ -17,8 +17,9 @@ func GetCreatureTypesHandler(creatureTypesDB dbinterfaces.CreatureTypes) gin.Han
 	if creatureTypesDB == nil {
 		panic("Bad data handler")
 	}
-	handler := GetHandler{}
-	handler.creatureTypesDB = creatureTypesDB
+	handler := GetHandler{
+		creatureTypesDB: creatureTypesDB,
+	}
 	return func(ctx *gin.Context) {
 		creatureTypes, err := handler.creatureTypesDB.GetCreatureTypes(ctx)
 		if err != nil {

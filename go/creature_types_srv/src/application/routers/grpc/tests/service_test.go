@@ -28,7 +28,7 @@ func TestGetCreatureTypes_GRPCCall(t *testing.T) {
 	assert.NotNil(t, dataHandler)
 	expectedData, err := dataHandler.GetCreatureTypes(context.Background())
 	assert.NoError(t, err)
-	services.New(grpcServer, dataHandler)
+	services.Run(grpcServer, dataHandler)
 	go func() {
 		err := grpcServer.Serve(listener)
 		if err != nil {

@@ -2,8 +2,10 @@ package application
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers"
@@ -13,6 +15,7 @@ import (
 	isettings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
 	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/use_cases/data_access/db"
 	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 )
 
 type RouterProcess func(router irouter.Router)
@@ -29,10 +32,10 @@ type Application struct {
 	routers   []irouter.Router
 }
 
-func NewApplication() *Application {
-	loader := settings.New()
-	if loader == nil {
-		return nil
+func NewApplication() (*Application, error) {
+	loader, err := settings.New()
+	if err != nil {
+		return nil, fmt.Errorf("can't construct settings loader: %w", err)
 	}
 	var settingsLoader isettings.SettingsLoader = loader
 
@@ -41,33 +44,55 @@ func NewApplication() *Application {
 	application := Application{}
 	config := config{}
 	if err := settingsLoader.Load(&config); err != nil {
-		logger.GetInstance().Error(
-			"can't load application config: %s",
-			zap.Error(err),
-		)
-		return nil
+		return nil, fmt.Errorf("can't load application config: %w", err)
 	}
-	creatureTypesDB := db.New(&config.CreatureTypes.StorageType)
-	if creatureTypesDB == nil {
-		logger.GetInstance().Error("Can't create creature types mngr")
-		return nil
+	creatureTypesDB, err := db.New(&config.CreatureTypes.StorageType)
+	if err != nil {
+		return nil, fmt.Errorf("Can't create creature types mngr: %w", err)
 	}
 	application.ctx, application.ctxCancel = context.WithCancel(context.Background())
-	application.routers = routers.New(application.ctx, settingsLoader, creatureTypesDB)
-	if len(application.routers) < 1 {
-		panic("no routers created - check env")
+
+	application.routers, err = routers.New(application.ctx, settingsLoader, creatureTypesDB)
+	if err != nil {
+		return nil, fmt.Errorf("can't construct application: %w", err)
 	}
 
-	return &application
+	return &application, nil
 }
 
 func (application *Application) Run() {
-	defer application.ctxCancel()
-	application.forEach(func(router irouter.Router) { go router.Run() })
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
+	var wgFinishRun sync.WaitGroup
+	go application.startWatchRun(stop, &wgFinishRun)
 	<-stop
-	application.forEach(func(router irouter.Router) { go router.Stop() })
+	application.waitRoutersStop()
+	wgFinishRun.Wait()
+}
+
+func (application *Application) startWatchRun(stopChan chan<- os.Signal, wg *sync.WaitGroup) {
+	wg.Add(1)
+	defer wg.Done()
+	var eg errgroup.Group
+	application.forEach(func(router irouter.Router) { go eg.Go(router.Run) })
+	if err := eg.Wait(); err != nil {
+		logger.GetInstance().Error(
+			"router run error",
+			zap.Error(err),
+		)
+		stopChan <- syscall.SIGTERM
+	}
+}
+
+func (application *Application) waitRoutersStop() {
+	var eg errgroup.Group
+	application.forEach(func(router irouter.Router) { go eg.Go(router.Stop) })
+	if err := eg.Wait(); err != nil {
+		logger.GetInstance().Error(
+			"router stop error",
+			zap.Error(err),
+		)
+	}
 }
 
 func (application *Application) forEach(processer RouterProcess) {

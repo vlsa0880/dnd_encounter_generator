@@ -7,6 +7,6 @@ import (
 )
 
 type CreatureTypes interface {
-	GetCreatureTypes(context.Context) (*entities.CreatureTypes, error)
+	GetCreatureTypes(context.Context) (entities.CreatureTypes, error)
 	UploadCreatureTypes(context.Context, *entities.CreatureTypes) error
 }

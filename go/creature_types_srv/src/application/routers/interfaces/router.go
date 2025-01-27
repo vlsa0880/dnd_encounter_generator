@@ -1,6 +1,6 @@
 package interfaces
 
 type Router interface {
-	Run()
-	Stop()
+	Run() error
+	Stop() error
 }

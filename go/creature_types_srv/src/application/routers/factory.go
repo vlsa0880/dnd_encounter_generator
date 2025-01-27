@@ -22,43 +22,46 @@ type Config struct {
 	}
 }
 
-func New(ctx context.Context, settingsLoader settings.SettingsLoader, creatureTypesDB dbinterfaces.CreatureTypes) []interfaces.Router {
+func New(ctx context.Context, settingsLoader settings.SettingsLoader, creatureTypesDB dbinterfaces.CreatureTypes) ([]interfaces.Router, error) {
 	if settingsLoader == nil {
-		return []interfaces.Router{}
-	}
-	config := Config{}
-	if err := settingsLoader.Load(&config); err != nil {
-		err_msg := fmt.Errorf("can't load routers factory settings: %s", err)
-		panic(err_msg)
+		return nil, fmt.Errorf("bad settings loader")
 	}
 
-	routers := []interfaces.Router{}
-	for _, router_name := range config.Router.Types {
-		switch router_name {
+	config := Config{}
+	if err := settingsLoader.Load(&config); err != nil {
+		return nil, fmt.Errorf("can't load routers factory settings: %w", err)
+	}
+
+	routers := make([]interfaces.Router, 0, len(config.Router.Types))
+	for _, routerName := range config.Router.Types {
+		switch routerName {
 		case "rest":
-			gin_router := gin.New(settingsLoader, creatureTypesDB)
-			if gin_router == nil {
-				panic("can't create gin router")
+			ginRouter, err := gin.New(settingsLoader, creatureTypesDB)
+			if err != nil {
+				return nil, fmt.Errorf("can't create gin router: %w", err)
 			}
-			routers = append(routers, gin_router)
+			routers = append(routers, ginRouter)
 		case "grpc":
-			grpc_router := grpc.New(settingsLoader, creatureTypesDB)
-			if grpc_router == nil {
-				panic("can't create grpc router")
+			grpcManager, err := grpc.New(settingsLoader, creatureTypesDB)
+			if err != nil {
+				return nil, fmt.Errorf("can't create grpc router: %w", err)
 			}
-			routers = append(routers, grpc_router)
+			routers = append(routers, grpcManager)
 		case "kafka":
-			kafkaRouter := kafka.New(ctx, settingsLoader, creatureTypesDB)
-			if kafkaRouter == nil {
-				panic("can't create kafka router")
+			kafkaManager, err := kafka.New(ctx, settingsLoader, creatureTypesDB)
+			if err != nil {
+				return nil, fmt.Errorf("can't create kafka router: %w", err)
 			}
-			routers = append(routers, kafkaRouter)
+			routers = append(routers, kafkaManager)
 		default:
 			logger.GetInstance().Warn(
 				"unknown router type",
-				zap.String("router_name", router_name),
+				zap.String("router_name", routerName),
 			)
 		}
 	}
-	return routers
+	if len(routers) <= 0 {
+		return nil, fmt.Errorf("no valid router names found")
+	}
+	return routers, nil
 }

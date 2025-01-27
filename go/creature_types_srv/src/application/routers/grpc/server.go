@@ -28,17 +28,16 @@ type Config struct {
 	}
 }
 
-func (router *GRPCRouter) Run() {
+func (router *GRPCRouter) Run() error {
 	if router.Server == nil {
-		panic("bad grpc server")
+		return fmt.Errorf("bad grpc server")
 	}
 	listener, err := net.Listen(
 		router.config.GRPC.Network,
 		router.config.GRPC.Address,
 	)
 	if err != nil {
-		err_msg := fmt.Errorf("can't create net listener: %s", err)
-		panic(err_msg)
+		return fmt.Errorf("can't create net listener: %s", err)
 	}
 
 	logger.GetInstance().Info(
@@ -47,14 +46,19 @@ func (router *GRPCRouter) Run() {
 	)
 
 	if err := router.Server.Serve(listener); err != nil {
-		err_msg := fmt.Errorf("can't create start grpc server: %s", err)
-		panic(err_msg)
+		return fmt.Errorf("can't create start grpc server: %w", err)
 	}
+	return nil
 }
 
-func NewServer(settingsLoader settings.SettingsLoader) *GRPCRouter {
+func NewServer(settingsLoader settings.SettingsLoader) (*GRPCRouter, error) {
 	if settingsLoader == nil {
-		panic("Bad settings loader")
+		return nil, fmt.Errorf("Bad settings loader")
+	}
+
+	var router GRPCRouter
+	if err := settingsLoader.Load(&router.config); err != nil {
+		return nil, fmt.Errorf("Can't load grpc server settings: %w", err)
 	}
 
 	loggingOpts := []logging.Option{
@@ -80,7 +84,6 @@ func NewServer(settingsLoader settings.SettingsLoader) *GRPCRouter {
 		interceptorLogger(logger.GetInstance()),
 		loggingOpts...)
 
-	router := GRPCRouter{}
 	router.Server = grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			recovery.UnaryServerInterceptor(recoveryOpts...),
@@ -88,23 +91,19 @@ func NewServer(settingsLoader settings.SettingsLoader) *GRPCRouter {
 		),
 	)
 
-	if err := settingsLoader.Load(&router.config); err != nil {
-		err_msg := fmt.Errorf("Can't load grpc server settings: %s", err)
-		panic(err_msg)
-	}
-
-	return &router
+	return &router, nil
 }
 
-func (router *GRPCRouter) Stop() {
+func (router *GRPCRouter) Stop() error {
 	if router.Server == nil {
-		return
+		return fmt.Errorf("Can't stop unconstructed")
 	}
 	logger.GetInstance().Info(
 		"stopping grpc server",
 		zap.String("address", router.config.GRPC.Address),
 	)
 	router.Server.GracefulStop()
+	return nil
 }
 
 func interceptorLogger(zap_log *zap.Logger) logging.Logger {

@@ -22,8 +22,8 @@ func New() *CreatureTypeManagerMockValid {
 	}
 }
 
-func (mock *CreatureTypeManagerMockValid) GetCreatureTypes(ctx context.Context) (*entities.CreatureTypes, error) {
-	return &mock.types, nil
+func (mock *CreatureTypeManagerMockValid) GetCreatureTypes(ctx context.Context) (entities.CreatureTypes, error) {
+	return mock.types, nil
 }
 
 func (mock *CreatureTypeManagerMockValid) UploadCreatureTypes(ctx context.Context, types *entities.CreatureTypes) error {

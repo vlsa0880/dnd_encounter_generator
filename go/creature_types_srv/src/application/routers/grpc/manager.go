@@ -4,10 +4,8 @@ import (
 	"fmt"
 
 	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/grpc/services"
-	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
 	dbinterfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/use_cases/interfaces"
-	"go.uber.org/zap"
 )
 
 type Manager struct {
@@ -15,33 +13,32 @@ type Manager struct {
 	creatureTypesDB dbinterfaces.CreatureTypes
 }
 
-func New(settingsLoader settings.SettingsLoader, creatureTypesDB dbinterfaces.CreatureTypes) *Manager {
+func New(settingsLoader settings.SettingsLoader, creatureTypesDB dbinterfaces.CreatureTypes) (*Manager, error) {
 	var manager Manager
-	manager.router = NewServer(settingsLoader)
+	var err error
+	manager.router, err = NewServer(settingsLoader)
+	if err != nil {
+		return nil, fmt.Errorf("can't construct grpc server: %w", err)
+	}
 	if err := manager.setupDataHandler(creatureTypesDB); err != nil {
-		logger.GetInstance().Error(
-			"can't setup data handler",
-			zap.Error(err),
-		)
-		return nil
+		return nil, fmt.Errorf("can't setup data handler: %w", err)
 	}
-	return &manager
+	return &manager, nil
 }
 
-func (manager *Manager) Run() {
+func (manager *Manager) Run() error {
 	if err := manager.isValid(); err != nil {
-		err_msg := fmt.Sprintf("Can't run grpc server: %s", err)
-		panic(err_msg)
+		return fmt.Errorf("Can't run grpc server: %w", err)
 	}
-	manager.router.Run()
+	return manager.router.Run()
 }
 
-func (manager *Manager) Stop() {
+func (manager *Manager) Stop() error {
 	if err := manager.isValid(); err != nil {
 		err_msg := fmt.Sprintf("Can't stop grpc server: %s", err)
 		panic(err_msg)
 	}
-	manager.router.Stop()
+	return manager.router.Stop()
 }
 
 func (manager *Manager) setupDataHandler(creatureTypesDB dbinterfaces.CreatureTypes) error {
@@ -63,5 +60,5 @@ func (manager *Manager) isValid() error {
 }
 
 func (manager *Manager) registerHandlers() {
-	services.New(manager.router.Server, manager.creatureTypesDB)
+	services.Run(manager.router.Server, manager.creatureTypesDB)
 }

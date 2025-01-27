@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 
+	"golang.org/x/sync/errgroup"
+
 	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/kafka/consumers"
 	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/kafka/interfaces"
+	ikafka "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/kafka/interfaces"
 	msghandlers "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/kafka/msg_handlers"
-	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
 	dbinterfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/use_cases/interfaces"
-	"go.uber.org/zap"
 )
 
 type Manager struct {
@@ -20,50 +21,62 @@ type Manager struct {
 	consumers      []interfaces.Consumer
 }
 
-func New(ctx context.Context, settingsLoader settings.SettingsLoader, creatureTypesDB dbinterfaces.CreatureTypes) *Manager {
+func New(ctx context.Context, settingsLoader settings.SettingsLoader, creatureTypesDB dbinterfaces.CreatureTypes) (*Manager, error) {
 	if settingsLoader == nil {
-		panic("bad settings loader")
+		return nil, fmt.Errorf("bad settings loader")
 	}
-	manager := &Manager{
-		settingsLoader: settingsLoader,
-	}
+
+	var manager Manager
+	manager.settingsLoader = settingsLoader
+
 	manager.ctx, manager.ctxCancel = context.WithCancel(ctx)
 	if err := manager.setupDataHandler(creatureTypesDB); err != nil {
-		logger.GetInstance().Error(
-			"can't setup data handler",
-			zap.Error(err),
-		)
-		return nil
+		return nil, fmt.Errorf("can't setup data handler: %w", err)
 	}
-	return manager
+	return &manager, nil
 }
 
-func (manager *Manager) Run() {
+func (manager *Manager) Run() error {
+	var eg errgroup.Group
 	for _, consumer := range manager.consumers {
-		go consumer.Run()
+		eg.Go(consumer.Run)
 	}
+	return eg.Wait()
 }
 
-func (manager *Manager) Stop() {
+func (manager *Manager) Stop() error {
+	var eg errgroup.Group
 	for _, consumer := range manager.consumers {
-		go consumer.Stop()
+		eg.Go(consumer.Stop)
 	}
+	return eg.Wait()
 }
 
 func (manager *Manager) setupDataHandler(creatureTypesDB dbinterfaces.CreatureTypes) error {
 	if err := manager.isErrors(); err != nil {
 		return err
 	}
-	handlerGetCreatureType := msghandlers.NewCreatureTypeHandler(
+
+	var handler ikafka.MsgHandler
+	var err error
+	handler, err = msghandlers.NewCreatureTypeHandler(
 		manager.settingsLoader,
 		creatureTypesDB,
 	)
-	var consumerGetCreatureTypes interfaces.Consumer = consumers.NewGetCreatureType(
+	if err != nil {
+		return err
+	}
+
+	consumer, err := consumers.NewGetCreatureType(
 		manager.ctx,
 		manager.settingsLoader,
-		handlerGetCreatureType,
+		handler,
 	)
-	manager.consumers = append(manager.consumers, consumerGetCreatureTypes)
+	if err != nil {
+		return err
+	}
+
+	manager.consumers = append(manager.consumers, consumer)
 	return nil
 }
 

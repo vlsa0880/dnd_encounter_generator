@@ -17,8 +17,8 @@ import (
 )
 
 func initSettingsLoader() *settings.EnvLoader {
-	loader := settings.New()
-	if loader == nil {
+	loader, err := settings.New()
+	if err != nil {
 		panic("bad settings loader")
 	}
 	var settingsLoader isettings.SettingsLoader = loader

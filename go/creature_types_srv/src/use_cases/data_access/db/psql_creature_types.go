@@ -37,20 +37,20 @@ func NewPsql() (*PsqlCreatureTypesController, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &controller, nil
-}
-
-func (controller *PsqlCreatureTypesController) GetCreatureTypes(ctx context.Context) (*entities.CreatureTypes, error) {
-	var err error
 	if err = controller.db.AutoMigrate(&dbCreatureTypesData{}); err != nil {
 		return nil, err
 	}
+	return &controller, nil
+}
+
+func (controller *PsqlCreatureTypesController) GetCreatureTypes(ctx context.Context) (entities.CreatureTypes, error) {
+	var err error
 	var creatureTypesData []dbCreatureTypesData
 	if err = controller.db.Find(&creatureTypesData).Error; err != nil {
-		return nil, err
+		return entities.CreatureTypes{}, err
 	}
 	res := entities.CreatureTypes{
-		Types: []entities.CreatureType{},
+		Types: make([]entities.CreatureType, 0, len(creatureTypesData)),
 	}
 	for _, dbCreatureTypeData := range creatureTypesData {
 		global_logger.GetInstance().Warn(
@@ -74,7 +74,7 @@ func (controller *PsqlCreatureTypesController) GetCreatureTypes(ctx context.Cont
 		"res",
 		zap.String("res", fmt.Sprintf("%v", res)),
 	)
-	return &res, nil
+	return res, nil
 }
 
 func (controller *PsqlCreatureTypesController) UploadCreatureTypes(ctx context.Context, types *entities.CreatureTypes) error {
@@ -82,7 +82,7 @@ func (controller *PsqlCreatureTypesController) UploadCreatureTypes(ctx context.C
 		if err := controller.db.Where("deleted_at is NULL").Delete(&dbCreatureTypesData{}).Error; err != nil {
 			return fmt.Errorf("can't delete all records from creature type table")
 		}
-		sqlData := []dbCreatureTypesData{}
+		sqlData := make([]dbCreatureTypesData, 0, len(types.Types))
 		for _, dbCreatureTypeData := range types.Types {
 			row := dbCreatureTypesData{
 				CreatureType: entities.CreatureType{

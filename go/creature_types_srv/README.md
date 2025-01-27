@@ -38,6 +38,7 @@ mkdir -p bin && go build -o bin/client src/main.go && ./run_client_docker.sh
 ```sh
 go/clients/kafka_clients/creature_types
 ```
+WARN: for now test kafka client run correctly only after second run
 
 ## Tests run
 ```sh

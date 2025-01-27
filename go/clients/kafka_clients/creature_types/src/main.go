@@ -15,8 +15,8 @@ import (
 )
 
 func main() {
-	loader := settings.New()
-	if loader == nil {
+	loader, err := settings.New()
+	if err != nil {
 		panic("can't create settings loader")
 	}
 	var settingsLoader isettings.SettingsLoader = loader

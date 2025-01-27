@@ -10,7 +10,8 @@ import (
 )
 
 func TestEnvLoader_Load(t *testing.T) {
-	loader := settings.New()
+	loader, err := settings.New()
+	assert.NoError(t, err)
 
 	type Test struct {
 		Var1 string
@@ -35,7 +36,7 @@ func TestEnvLoader_Load(t *testing.T) {
 	os.Setenv("TEST_2_VARVAR6", "arr_value1,arr_value2")
 
 	config := &TestConfig{}
-	err := loader.Load(config)
+	err = loader.Load(config)
 	assert.NoError(t, err)
 	assert.Equal(t, "test_value_1", config.Test.Var1)
 	assert.Equal(t, 123, config.Test.Var2)

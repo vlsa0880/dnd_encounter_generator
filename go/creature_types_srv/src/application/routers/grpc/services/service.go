@@ -16,11 +16,7 @@ type serverAPI struct {
 	creatureTypesDB dbinterfaces.CreatureTypes
 }
 
-type Getter interface {
-	GetCreatureTypes(ctx context.Context, req *gen.GetRequest) (*gen.GetResponse, error)
-}
-
-func New(gRPCServer *grpc.Server, creatureTypesDB dbinterfaces.CreatureTypes) {
+func Run(gRPCServer *grpc.Server, creatureTypesDB dbinterfaces.CreatureTypes) {
 	gen.RegisterDataHandlerServer(gRPCServer, &serverAPI{creatureTypesDB: creatureTypesDB})
 }
 
@@ -32,7 +28,9 @@ func (server *serverAPI) GetCreatureTypes(ctx context.Context, req *gen.GetReque
 			zap.Error(err),
 		)
 	}
-	resp := gen.GetResponse{}
+	resp := gen.GetResponse{
+		CreatureTypes: make([]*gen.CreatureType, 0, len(creatureTypes.Types)),
+	}
 	for _, creature_type := range creatureTypes.Types {
 		resp.CreatureTypes = append(
 			resp.CreatureTypes,

@@ -7,8 +7,8 @@ import (
 type EnvLoader struct {
 }
 
-func New() *EnvLoader {
-	return &EnvLoader{}
+func New() (*EnvLoader, error) {
+	return &EnvLoader{}, nil
 }
 
 func (loader *EnvLoader) Load(target interface{}) error {

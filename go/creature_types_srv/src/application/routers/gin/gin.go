@@ -6,12 +6,10 @@ import (
 	handlers "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/gin/handlers"
 	gin_middleware "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/gin/middleware"
 	gin_middleware_prometheus "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/gin/middleware/prometheus"
-	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
 	dbinterfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/use_cases/interfaces"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 type Config struct {
@@ -29,48 +27,42 @@ type GinManager struct {
 	config          Config
 }
 
-func New(settingsLoader settings.SettingsLoader, creatureTypesDB dbinterfaces.CreatureTypes) *GinManager {
+func New(settingsLoader settings.SettingsLoader, creatureTypesDB dbinterfaces.CreatureTypes) (*GinManager, error) {
 	mgr := GinManager{}
 	if err := settingsLoader.Load(&mgr.config); err != nil {
-		logger.GetInstance().Error(
-			"Error loading gin router config",
-			zap.Error(err),
-		)
-		return nil
+		return nil, fmt.Errorf("Error loading gin router config: %w", err)
 	}
 	if creatureTypesDB == nil {
-		logger.GetInstance().Error(
-			"bad data handler",
-		)
-		return nil
+		return nil, fmt.Errorf("bad data handler")
 	}
 	mgr.creatureTypesDB = creatureTypesDB
 
 	mgr.router = gin.Default()
 	if err := mgr.setupMiddleware(settingsLoader); err != nil {
-		logger.GetInstance().Error(
-			"can't setup middleware",
-			zap.Error(err),
-		)
-		return nil
+		return nil, fmt.Errorf("can't setup middleware: %w", err)
 	}
 
 	mgr.setupRoutes(creatureTypesDB)
-	return &mgr
+	return &mgr, nil
 }
 
-func (mgr *GinManager) Run() {
-	if mgr.router == nil || mgr.creatureTypesDB == nil {
-		panic("Run Init() before Run()")
+func (mgr *GinManager) Run() error {
+	if mgr.router == nil {
+		return fmt.Errorf("Bad router")
+	}
+	if mgr.creatureTypesDB == nil {
+		return fmt.Errorf("Bad db")
 	}
 	full_address := mgr.config.Http.Address + ":" + mgr.config.Http.Port
 	if err := mgr.router.Run(full_address); err != nil {
-		err_msg := fmt.Errorf("can't run gin: %s", err)
-		panic(err_msg)
+		return fmt.Errorf("can't run gin: %s", err)
 	}
+	return nil
 }
 
-func (mgr *GinManager) Stop() {}
+func (mgr *GinManager) Stop() error {
+	return nil
+}
 
 func (mgr *GinManager) setupMiddleware(settingsLoader settings.SettingsLoader) error {
 	mgr.router.Use(gin_middleware.NewLoggerHandler(settingsLoader))

@@ -32,19 +32,18 @@ type GetCreatureTypeMsgHandler struct {
 	producer      *kafka.Producer
 }
 
-func NewCreatureTypeHandler(settingsLoader settings.SettingsLoader, creatureTypes dbinterfaces.CreatureTypes) *GetCreatureTypeMsgHandler {
+func NewCreatureTypeHandler(settingsLoader settings.SettingsLoader, creatureTypes dbinterfaces.CreatureTypes) (*GetCreatureTypeMsgHandler, error) {
 	if creatureTypes == nil {
-		panic("bad data handler")
+		return nil, fmt.Errorf("bad data handler")
 	} else if settingsLoader == nil {
-		panic("bad settings loader")
+		return nil, fmt.Errorf("bad settings loader")
 	}
 
-	handler := &GetCreatureTypeMsgHandler{
-		creatureTypes: creatureTypes,
-	}
+	var handler GetCreatureTypeMsgHandler
+	handler.creatureTypes = creatureTypes
 
 	if err := settingsLoader.Load(&handler.config); err != nil {
-		panic(fmt.Errorf("can't load handler config: %s", err))
+		return nil, fmt.Errorf("can't load handler config: %w", err)
 	}
 
 	var err error
@@ -53,7 +52,7 @@ func NewCreatureTypeHandler(settingsLoader settings.SettingsLoader, creatureType
 			"bootstrap.servers": handler.config.Kafka.Servers,
 		})
 	if err != nil {
-		panic(fmt.Sprintf("Can't create producer: %s", err))
+		return nil, fmt.Errorf("Can't create producer: %w", err)
 	}
 
 	if err = utils.CreateTopicByProducer(
@@ -62,10 +61,10 @@ func NewCreatureTypeHandler(settingsLoader settings.SettingsLoader, creatureType
 		handler.producer,
 		&handler.config.Kafka.SendCreatureTypes.Topic,
 	); err != nil {
-		panic(fmt.Sprintf("can't create topic '%s': %s", handler.config.Kafka.SendCreatureTypes.Topic, err))
+		return nil, fmt.Errorf("can't create topic '%s': %w", handler.config.Kafka.SendCreatureTypes.Topic, err)
 	}
 	logger.GetInstance().Info("handler successfully created")
-	return handler
+	return &handler, nil
 }
 
 func (handler *GetCreatureTypeMsgHandler) Handle(ctx context.Context, msg *kafka.Message) error {

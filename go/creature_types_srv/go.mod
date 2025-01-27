@@ -10,11 +10,11 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.2.0
 	github.com/jackc/pgtype v1.14.4
 	github.com/prometheus/client_golang v1.20.5
-	github.com/segmentio/kafka-go v0.4.47
 	github.com/sethvargo/go-envconfig v1.1.0
 	github.com/stretchr/testify v1.10.0
 	github.com/vrischmann/envconfig v1.3.0
 	go.uber.org/zap v1.27.0
+	golang.org/x/sync v0.8.0
 	google.golang.org/grpc v1.69.0
 	google.golang.org/protobuf v1.35.1
 	gorm.io/driver/postgres v1.5.11
@@ -52,7 +52,6 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
-	github.com/pierrec/lz4/v4 v4.1.15 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.55.0 // indirect
@@ -63,7 +62,6 @@ require (
 	golang.org/x/arch v0.8.0 // indirect
 	golang.org/x/crypto v0.28.0 // indirect
 	golang.org/x/net v0.30.0 // indirect
-	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/text v0.19.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241015192408-796eee8c2d53 // indirect

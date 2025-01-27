@@ -1,6 +1,6 @@
 package interfaces
 
 type Consumer interface {
-	Run()
-	Stop()
+	Run() error
+	Stop() error
 }
