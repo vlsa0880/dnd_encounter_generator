@@ -53,7 +53,7 @@ func (controller *PsqlCreatureTypesController) GetCreatureTypes(ctx context.Cont
 		Types: make([]entities.CreatureType, 0, len(creatureTypesData)),
 	}
 	for _, dbCreatureTypeData := range creatureTypesData {
-		global_logger.GetInstance().Warn(
+		global_logger.GetInstance().Debug(
 			"get creature type data",
 			zap.String("data", fmt.Sprintf("%v", dbCreatureTypeData)),
 		)
@@ -61,7 +61,7 @@ func (controller *PsqlCreatureTypesController) GetCreatureTypes(ctx context.Cont
 			ID:   dbCreatureTypeData.Model.ID,
 			Name: dbCreatureTypeData.CreatureType.Name,
 		}
-		global_logger.GetInstance().Warn(
+		global_logger.GetInstance().Debug(
 			"creatureType",
 			zap.String("creatureType", fmt.Sprintf("%v", creatureType)),
 		)
@@ -70,7 +70,7 @@ func (controller *PsqlCreatureTypesController) GetCreatureTypes(ctx context.Cont
 			creatureType,
 		)
 	}
-	global_logger.GetInstance().Warn(
+	global_logger.GetInstance().Debug(
 		"res",
 		zap.String("res", fmt.Sprintf("%v", res)),
 	)

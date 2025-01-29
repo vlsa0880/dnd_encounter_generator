@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"runtime/debug"
 	"sync"
 	"syscall"
 
@@ -15,7 +16,6 @@ import (
 	isettings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
 	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/use_cases/data_access/db"
 	"go.uber.org/zap"
-	"golang.org/x/sync/errgroup"
 )
 
 type RouterProcess func(router irouter.Router)
@@ -30,6 +30,8 @@ type Application struct {
 	ctx       context.Context
 	ctxCancel context.CancelFunc
 	routers   []irouter.Router
+	wgFinish  sync.WaitGroup
+	stopCh    chan os.Signal
 }
 
 func NewApplication() (*Application, error) {
@@ -57,49 +59,70 @@ func NewApplication() (*Application, error) {
 		return nil, fmt.Errorf("can't construct application: %w", err)
 	}
 
+	application.stopCh = make(chan os.Signal, 1)
+
 	return &application, nil
 }
 
 func (application *Application) Run() {
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
-	var wgFinishRun sync.WaitGroup
-	go application.startWatchRun(stop, &wgFinishRun)
-	<-stop
-	application.waitRoutersStop()
-	wgFinishRun.Wait()
+	defer application.handlePanic()
+	signal.Notify(application.stopCh, syscall.SIGTERM, syscall.SIGINT)
+	application.forEachRouter(application.runRouter())
+	<-application.stopCh
+	application.forEachRouter(application.stopRouter())
+	application.wgFinish.Wait()
+	logger.GetInstance().Info("application run finished")
 }
 
-func (application *Application) startWatchRun(stopChan chan<- os.Signal, wg *sync.WaitGroup) {
-	wg.Add(1)
-	defer wg.Done()
-	var eg errgroup.Group
-	application.forEach(func(router irouter.Router) { go eg.Go(router.Run) })
-	if err := eg.Wait(); err != nil {
-		logger.GetInstance().Error(
-			"router run error",
-			zap.Error(err),
-		)
-		stopChan <- syscall.SIGTERM
+func (application *Application) runRouter() RouterProcess {
+	return func(router irouter.Router) {
+		go func() {
+			defer application.handlePanic()
+			defer application.wgFinish.Done()
+			application.wgFinish.Add(1)
+			if err := router.Run(); err != nil {
+				logger.GetInstance().Error(
+					"can't run router",
+					zap.Error(err),
+				)
+				application.stopCh <- syscall.SIGTERM
+			}
+		}()
 	}
 }
 
-func (application *Application) waitRoutersStop() {
-	var eg errgroup.Group
-	application.forEach(func(router irouter.Router) { go eg.Go(router.Stop) })
-	if err := eg.Wait(); err != nil {
-		logger.GetInstance().Error(
-			"router stop error",
-			zap.Error(err),
-		)
+func (application *Application) stopRouter() RouterProcess {
+	return func(router irouter.Router) {
+		go func() {
+			defer application.handlePanic()
+			if err := router.Stop(); err != nil {
+				logger.GetInstance().Error(
+					"can't stop router",
+					zap.Error(err),
+				)
+			}
+		}()
 	}
 }
 
-func (application *Application) forEach(processer RouterProcess) {
+func (application *Application) forEachRouter(processer RouterProcess) {
 	for _, router := range application.routers {
 		if router == nil {
 			panic("some of application routers is nil")
 		}
 		processer(router)
+	}
+}
+
+func (application *Application) handlePanic() {
+	if runErr := recover(); runErr != nil {
+		if errMsg, ok := runErr.(string); logger.GetInstance() != nil && ok {
+			logger.GetInstance().Error(
+				"panic occured - terminating",
+				zap.String("errMsg", errMsg),
+				zap.String("stacktrace", string(debug.Stack())),
+			)
+		}
+		application.stopCh <- syscall.SIGTERM
 	}
 }

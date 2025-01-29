@@ -46,7 +46,7 @@ func (router *GRPCRouter) Run() error {
 	)
 
 	if err := router.Server.Serve(listener); err != nil {
-		return fmt.Errorf("can't create start grpc server: %w", err)
+		return fmt.Errorf("can't start grpc server: %w", err)
 	}
 	return nil
 }
