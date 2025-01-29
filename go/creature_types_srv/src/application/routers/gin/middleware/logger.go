@@ -15,11 +15,17 @@ func NewLoggerHandler(settings_loader settings.SettingsLoader) gin.HandlerFunc {
 	traceIDField := getTraceIDField(settings_loader)
 	return func(ctx *gin.Context) {
 		t := time.Now()
+		logger.GetInstance().Info(
+			"request processing started",
+			zap.String("traceID", getTraceID(ctx, traceIDField)),
+			zap.Duration("processing_latency", time.Since(t)),
+			zap.Int("http_status", ctx.Writer.Status()),
+		)
 
 		ctx.Next()
 
-		logger.GetInstance().Debug(
-			"request processed data",
+		logger.GetInstance().Info(
+			"request processing finished",
 			zap.String("traceID", getTraceID(ctx, traceIDField)),
 			zap.Duration("processing_latency", time.Since(t)),
 			zap.Int("http_status", ctx.Writer.Status()),
