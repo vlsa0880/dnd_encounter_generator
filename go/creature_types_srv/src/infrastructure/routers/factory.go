@@ -9,7 +9,7 @@ import (
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
 
-	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/infrastructure/routers/gin"
+	ginrouter "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/infrastructure/routers/gin"
 	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/infrastructure/routers/grpc"
 	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/infrastructure/routers/kafka"
 
@@ -36,7 +36,7 @@ func New(ctx context.Context, settingsLoader settings.SettingsLoader, controller
 	for _, routerName := range config.Router.Types {
 		switch routerName {
 		case "rest":
-			ginRouter, err := gin.New(settingsLoader, controller)
+			ginRouter, err := ginrouter.New(settingsLoader, controller)
 			if err != nil {
 				return nil, fmt.Errorf("can't create gin router: %w", err)
 			}

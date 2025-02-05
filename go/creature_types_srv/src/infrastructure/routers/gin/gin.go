@@ -1,4 +1,4 @@
-package gin
+package ginrouter
 
 import (
 	"fmt"
@@ -38,7 +38,7 @@ func New(settingsLoader settings.SettingsLoader, controller icontrollers.Creatur
 	}
 	mgr.controller = controller
 
-	mgr.router = gin.Default()
+	mgr.router = gin.New()
 	if err := mgr.setupMiddleware(settingsLoader); err != nil {
 		return nil, fmt.Errorf("can't setup middleware: %w", err)
 	}
@@ -66,7 +66,10 @@ func (mgr *GinManager) Stop() error {
 }
 
 func (mgr *GinManager) setupMiddleware(settingsLoader settings.SettingsLoader) error {
-	mgr.router.Use(gin_middleware.NewLoggerHandler(settingsLoader))
+	mgr.router.Use(
+		gin.Recovery(),
+		gin_middleware.NewLoggerHandler(settingsLoader),
+	)
 
 	if err := gin_middleware_prometheus.SetupPrometheusMetrics(mgr.router, settingsLoader); err != nil {
 		return err
