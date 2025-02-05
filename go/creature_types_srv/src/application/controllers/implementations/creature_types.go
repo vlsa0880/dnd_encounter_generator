@@ -9,10 +9,10 @@ import (
 )
 
 type CreatureTypes struct {
-	creatureTypesDB dbinterfaces.CreatureTypes
+	creatureTypesDB dbinterfaces.CreatureTypesRepository
 }
 
-func NewGetCreatureTypes(creatureTypesDb dbinterfaces.CreatureTypes) (*CreatureTypes, error) {
+func NewGetCreatureTypes(creatureTypesDb dbinterfaces.CreatureTypesRepository) (*CreatureTypes, error) {
 	if creatureTypesDb == nil {
 		return nil, fmt.Errorf("bad db")
 	}

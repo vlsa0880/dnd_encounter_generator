@@ -9,7 +9,7 @@ import (
 )
 
 type CreatureTypesValid struct {
-	db dbinterfaces.CreatureTypes
+	db dbinterfaces.CreatureTypesRepository
 }
 
 func NewCreatureTypesValid() *CreatureTypesValid {

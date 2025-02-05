@@ -6,7 +6,7 @@ import (
 	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/use_cases/interfaces"
 )
 
-func New(storageType *string) (interfaces.CreatureTypes, error) {
+func New(storageType *string) (interfaces.CreatureTypesRepository, error) {
 	switch *storageType {
 	case "postgres":
 		controller, err := NewPsql()
