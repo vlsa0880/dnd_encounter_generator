@@ -7,12 +7,12 @@
 
 ## Replace creature type with new ones
 ```sh
-curl -X PUT -H "Content-Type: application/json" -d '{"types": ["тест1", "тест2"]}' "localhost:8088/creatures_data/types"
+curl -X PUT -H "Content-Type: application/json" -d '{"types": ["тест1", "тест2"]}' "localhost:8088/creatures/types"
 ```
 
 ## Request available creature types
 ```sh
-curl "localhost:8088/creatures_data/types"
+curl "localhost:8088/creatures/types"
 ```
 
 ## GRPC
