@@ -9,6 +9,7 @@ import (
 	gin_middleware_prometheus "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/infrastructure/routers/gin/middleware/prometheus"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
 
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 )
 
@@ -83,4 +84,5 @@ func (mgr *GinManager) setupRoutes(controller icontrollers.CreatureTypes) {
 		mgr.config.Http.PutCreatureTypesEndpoint,
 		handlers.PutCreatureTypesHandler(controller),
 	)
+	pprof.Register(mgr.router)
 }
