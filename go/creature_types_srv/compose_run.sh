@@ -10,4 +10,5 @@ docker compose  \
     -f docker/compose/graphana.yaml \
     -f docker/compose/loki.yaml \
     -f docker/compose/promtail.yaml \
+    -f docker/compose/redis.yaml \
     up --build --force-recreate --remove-orphans --abort-on-container-exit

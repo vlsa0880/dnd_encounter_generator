@@ -22,12 +22,6 @@ import (
 
 type RouterProcess func(router irouter.Router)
 
-type config struct {
-	CreatureTypes struct {
-		StorageType string `json:"storage_type"`
-	}
-}
-
 type Application struct {
 	ctx       context.Context
 	ctxCancel context.CancelFunc
@@ -46,11 +40,7 @@ func NewApplication() (*Application, error) {
 	logger.InitLogger(settingsLoader)
 
 	application := Application{}
-	config := config{}
-	if err := settingsLoader.Load(&config); err != nil {
-		return nil, fmt.Errorf("can't load application config: %w", err)
-	}
-	creatureTypesDB, err := db.New(&config.CreatureTypes.StorageType)
+	creatureTypesDB, err := db.New(settingsLoader)
 	if err != nil {
 		return nil, fmt.Errorf("Can't create creature types mngr: %w", err)
 	}

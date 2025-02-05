@@ -1,0 +1,14 @@
+services:
+  redis:
+    image: redis:7.4.2-alpine
+    restart: always
+    user: "${UID}:${GID}"
+    ports:
+      - "6379:6379"
+    env_file:
+      - ../env/redis.env
+    healthcheck:
+      test: ["CMD", "redis-cli","ping"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
