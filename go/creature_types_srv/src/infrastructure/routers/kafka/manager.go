@@ -6,12 +6,12 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/kafka/consumers"
-	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/kafka/interfaces"
-	ikafka "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/kafka/interfaces"
-	msghandlers "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/kafka/msg_handlers"
+	icontrollers "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/controllers/interfaces"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/infrastructure/routers/kafka/consumers"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/infrastructure/routers/kafka/interfaces"
+	ikafka "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/infrastructure/routers/kafka/interfaces"
+	msghandlers "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/infrastructure/routers/kafka/msg_handlers"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
-	dbinterfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/use_cases/interfaces"
 )
 
 type Manager struct {
@@ -21,7 +21,7 @@ type Manager struct {
 	consumers      []interfaces.Consumer
 }
 
-func New(ctx context.Context, settingsLoader settings.SettingsLoader, creatureTypesDB dbinterfaces.CreatureTypes) (*Manager, error) {
+func New(ctx context.Context, settingsLoader settings.SettingsLoader, controller icontrollers.CreatureTypes) (*Manager, error) {
 	if settingsLoader == nil {
 		return nil, fmt.Errorf("bad settings loader")
 	}
@@ -30,7 +30,7 @@ func New(ctx context.Context, settingsLoader settings.SettingsLoader, creatureTy
 	manager.settingsLoader = settingsLoader
 
 	manager.ctx, manager.ctxCancel = context.WithCancel(ctx)
-	if err := manager.setupDataHandler(creatureTypesDB); err != nil {
+	if err := manager.setupDataHandler(controller); err != nil {
 		return nil, fmt.Errorf("can't setup data handler: %w", err)
 	}
 	return &manager, nil
@@ -52,7 +52,7 @@ func (manager *Manager) Stop() error {
 	return eg.Wait()
 }
 
-func (manager *Manager) setupDataHandler(creatureTypesDB dbinterfaces.CreatureTypes) error {
+func (manager *Manager) setupDataHandler(controller icontrollers.CreatureTypes) error {
 	if err := manager.isErrors(); err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func (manager *Manager) setupDataHandler(creatureTypesDB dbinterfaces.CreatureTy
 	var err error
 	handler, err = msghandlers.NewCreatureTypeHandler(
 		manager.settingsLoader,
-		creatureTypesDB,
+		controller,
 	)
 	if err != nil {
 		return err

@@ -6,22 +6,22 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
-	gen "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/grpc/gen"
+	icontrollers "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/controllers/interfaces"
+	gen "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/infrastructure/routers/grpc/gen"
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
-	dbinterfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/use_cases/interfaces"
 )
 
 type serverAPI struct {
 	gen.UnimplementedDataHandlerServer
-	creatureTypesDB dbinterfaces.CreatureTypes
+	controller icontrollers.CreatureTypes
 }
 
-func Run(gRPCServer *grpc.Server, creatureTypesDB dbinterfaces.CreatureTypes) {
-	gen.RegisterDataHandlerServer(gRPCServer, &serverAPI{creatureTypesDB: creatureTypesDB})
+func Run(gRPCServer *grpc.Server, controller icontrollers.CreatureTypes) {
+	gen.RegisterDataHandlerServer(gRPCServer, &serverAPI{controller: controller})
 }
 
 func (server *serverAPI) GetCreatureTypes(ctx context.Context, req *gen.GetRequest) (*gen.GetResponse, error) {
-	creatureTypes, err := server.creatureTypesDB.GetCreatureTypes(ctx)
+	creatureTypes, err := server.controller.Get(ctx)
 	if err != nil {
 		logger.GetInstance().Error(
 			"can't get creature types",

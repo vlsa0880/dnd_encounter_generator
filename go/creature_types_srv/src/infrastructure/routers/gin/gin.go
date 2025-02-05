@@ -3,11 +3,11 @@ package gin
 import (
 	"fmt"
 
-	handlers "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/gin/handlers"
-	gin_middleware "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/gin/middleware"
-	gin_middleware_prometheus "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/gin/middleware/prometheus"
+	icontrollers "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/controllers/interfaces"
+	handlers "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/infrastructure/routers/gin/handlers"
+	gin_middleware "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/infrastructure/routers/gin/middleware"
+	gin_middleware_prometheus "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/infrastructure/routers/gin/middleware/prometheus"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
-	dbinterfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/use_cases/interfaces"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,27 +22,27 @@ type Config struct {
 }
 
 type GinManager struct {
-	router          *gin.Engine
-	creatureTypesDB dbinterfaces.CreatureTypes
-	config          Config
+	router     *gin.Engine
+	config     Config
+	controller icontrollers.CreatureTypes
 }
 
-func New(settingsLoader settings.SettingsLoader, creatureTypesDB dbinterfaces.CreatureTypes) (*GinManager, error) {
+func New(settingsLoader settings.SettingsLoader, controller icontrollers.CreatureTypes) (*GinManager, error) {
 	mgr := GinManager{}
 	if err := settingsLoader.Load(&mgr.config); err != nil {
 		return nil, fmt.Errorf("Error loading gin router config: %w", err)
 	}
-	if creatureTypesDB == nil {
+	if controller == nil {
 		return nil, fmt.Errorf("bad data handler")
 	}
-	mgr.creatureTypesDB = creatureTypesDB
+	mgr.controller = controller
 
 	mgr.router = gin.Default()
 	if err := mgr.setupMiddleware(settingsLoader); err != nil {
 		return nil, fmt.Errorf("can't setup middleware: %w", err)
 	}
 
-	mgr.setupRoutes(creatureTypesDB)
+	mgr.setupRoutes(controller)
 	return &mgr, nil
 }
 
@@ -50,7 +50,7 @@ func (mgr *GinManager) Run() error {
 	if mgr.router == nil {
 		return fmt.Errorf("Bad router")
 	}
-	if mgr.creatureTypesDB == nil {
+	if mgr.controller == nil {
 		return fmt.Errorf("Bad db")
 	}
 	full_address := mgr.config.Http.Address + ":" + mgr.config.Http.Port
@@ -74,13 +74,13 @@ func (mgr *GinManager) setupMiddleware(settingsLoader settings.SettingsLoader) e
 	return nil
 }
 
-func (mgr *GinManager) setupRoutes(creatureTypesDB dbinterfaces.CreatureTypes) {
+func (mgr *GinManager) setupRoutes(controller icontrollers.CreatureTypes) {
 	mgr.router.GET(
 		mgr.config.Http.GetCreatureTypesEndpoint,
-		handlers.GetCreatureTypesHandler(creatureTypesDB),
+		handlers.GetCreatureTypesHandler(controller),
 	)
 	mgr.router.PUT(
 		mgr.config.Http.PutCreatureTypesEndpoint,
-		handlers.PutCreatureTypesHandler(creatureTypesDB),
+		handlers.PutCreatureTypesHandler(controller),
 	)
 }

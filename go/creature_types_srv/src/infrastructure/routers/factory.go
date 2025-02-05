@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/interfaces"
+	icontrollers "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/controllers/interfaces"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/infrastructure/routers/interfaces"
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
-	dbinterfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/use_cases/interfaces"
 
-	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/gin"
-	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/grpc"
-	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/kafka"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/infrastructure/routers/gin"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/infrastructure/routers/grpc"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/infrastructure/routers/kafka"
 
 	"go.uber.org/zap"
 )
@@ -22,7 +22,7 @@ type Config struct {
 	}
 }
 
-func New(ctx context.Context, settingsLoader settings.SettingsLoader, creatureTypesDB dbinterfaces.CreatureTypes) ([]interfaces.Router, error) {
+func New(ctx context.Context, settingsLoader settings.SettingsLoader, controller icontrollers.CreatureTypes) ([]interfaces.Router, error) {
 	if settingsLoader == nil {
 		return nil, fmt.Errorf("bad settings loader")
 	}
@@ -36,19 +36,19 @@ func New(ctx context.Context, settingsLoader settings.SettingsLoader, creatureTy
 	for _, routerName := range config.Router.Types {
 		switch routerName {
 		case "rest":
-			ginRouter, err := gin.New(settingsLoader, creatureTypesDB)
+			ginRouter, err := gin.New(settingsLoader, controller)
 			if err != nil {
 				return nil, fmt.Errorf("can't create gin router: %w", err)
 			}
 			routers = append(routers, ginRouter)
 		case "grpc":
-			grpcManager, err := grpc.New(settingsLoader, creatureTypesDB)
+			grpcManager, err := grpc.New(settingsLoader, controller)
 			if err != nil {
 				return nil, fmt.Errorf("can't create grpc router: %w", err)
 			}
 			routers = append(routers, grpcManager)
 		case "kafka":
-			kafkaManager, err := kafka.New(ctx, settingsLoader, creatureTypesDB)
+			kafkaManager, err := kafka.New(ctx, settingsLoader, controller)
 			if err != nil {
 				return nil, fmt.Errorf("can't create kafka router: %w", err)
 			}

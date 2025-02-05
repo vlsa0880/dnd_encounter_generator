@@ -1,4 +1,4 @@
-package application
+package main
 
 import (
 	"context"
@@ -9,8 +9,10 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers"
-	irouter "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/interfaces"
+	controllers "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/controllers/implementations"
+	icontrollers "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/controllers/interfaces"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/infrastructure/routers"
+	irouter "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/infrastructure/routers/interfaces"
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/env"
 	isettings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
@@ -54,7 +56,13 @@ func NewApplication() (*Application, error) {
 	}
 	application.ctx, application.ctxCancel = context.WithCancel(context.Background())
 
-	application.routers, err = routers.New(application.ctx, settingsLoader, creatureTypesDB)
+	var controller icontrollers.CreatureTypes
+	controller, err = controllers.NewGetCreatureTypes(creatureTypesDB)
+	if err != nil {
+		return nil, fmt.Errorf("Can't create creature types controller: %w", err)
+	}
+
+	application.routers, err = routers.New(application.ctx, settingsLoader, controller)
 	if err != nil {
 		return nil, fmt.Errorf("can't construct application: %w", err)
 	}
