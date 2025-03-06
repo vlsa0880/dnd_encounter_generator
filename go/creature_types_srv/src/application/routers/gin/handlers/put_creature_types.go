@@ -8,22 +8,29 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 
-	icontrollers "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/controllers/interfaces"
+	json_validators "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/gin/validators/json"
 	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/domain/entities"
-	jsonvalidators "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/infrastructure/routers/gin/validators/json"
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
+	dbinterfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/use_cases/interfaces"
 )
+
+type PutHandler struct {
+	creatureTypesDB dbinterfaces.CreatureTypesRepository
+}
 
 type jsonTypedData struct {
 	Types []string
 }
 
-func PutCreatureTypesHandler(controller icontrollers.CreatureTypes) gin.HandlerFunc {
-	if controller == nil {
-		panic("Bad controller")
+func PutCreatureTypesHandler(creatureTypesDB dbinterfaces.CreatureTypesRepository) gin.HandlerFunc {
+	if creatureTypesDB == nil {
+		panic("Bad creature types db")
+	}
+	handler := PutHandler{
+		creatureTypesDB: creatureTypesDB,
 	}
 	return func(ctx *gin.Context) {
-		if err := jsonvalidators.JsonBodyExist(ctx); err != nil {
+		if err := json_validators.JsonBodyExist(ctx); err != nil {
 			logger.GetInstance().Error(
 				"bad json body",
 				zap.Error(err),
@@ -43,7 +50,7 @@ func PutCreatureTypesHandler(controller icontrollers.CreatureTypes) gin.HandlerF
 		for _, typeName := range typesData.Types {
 			creatureTypesData.Types = append(creatureTypesData.Types, entities.CreatureType{Name: typeName})
 		}
-		if err := controller.Set(ctx, &creatureTypesData); err != nil {
+		if err := handler.creatureTypesDB.UploadCreatureTypes(ctx, &creatureTypesData); err != nil {
 			logger.GetInstance().Error(
 				"can't handle request",
 				zap.Error(err),

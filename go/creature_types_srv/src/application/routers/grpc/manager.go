@@ -3,24 +3,24 @@ package grpc
 import (
 	"fmt"
 
-	icontrollers "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/controllers/interfaces"
-	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/infrastructure/routers/grpc/services"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/grpc/services"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
+	dbinterfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/use_cases/interfaces"
 )
 
 type Manager struct {
-	router     *GRPCRouter
-	controller icontrollers.CreatureTypes
+	router          *GRPCRouter
+	creatureTypesDB dbinterfaces.CreatureTypesRepository
 }
 
-func New(settingsLoader settings.SettingsLoader, controller icontrollers.CreatureTypes) (*Manager, error) {
+func New(settingsLoader settings.SettingsLoader, creatureTypesDB dbinterfaces.CreatureTypesRepository) (*Manager, error) {
 	var manager Manager
 	var err error
 	manager.router, err = NewServer(settingsLoader)
 	if err != nil {
 		return nil, fmt.Errorf("can't construct grpc server: %w", err)
 	}
-	if err := manager.setupDataHandler(controller); err != nil {
+	if err := manager.setupDataHandler(creatureTypesDB); err != nil {
 		return nil, fmt.Errorf("can't setup data handler: %w", err)
 	}
 	return &manager, nil
@@ -41,17 +41,17 @@ func (manager *Manager) Stop() error {
 	return manager.router.Stop()
 }
 
-func (manager *Manager) setupDataHandler(controller icontrollers.CreatureTypes) error {
-	if controller == nil {
+func (manager *Manager) setupDataHandler(creatureTypesDB dbinterfaces.CreatureTypesRepository) error {
+	if creatureTypesDB == nil {
 		return fmt.Errorf("Data handler is nil")
 	}
-	manager.controller = controller
+	manager.creatureTypesDB = creatureTypesDB
 	manager.registerHandlers()
 	return manager.isValid()
 }
 
 func (manager *Manager) isValid() error {
-	if manager.controller == nil {
+	if manager.creatureTypesDB == nil {
 		return fmt.Errorf("Data handler is nil")
 	} else if manager.router.Server == nil {
 		return fmt.Errorf("Grpc server is nil")
@@ -60,5 +60,5 @@ func (manager *Manager) isValid() error {
 }
 
 func (manager *Manager) registerHandlers() {
-	services.Run(manager.router.Server, manager.controller)
+	services.Run(manager.router.Server, manager.creatureTypesDB)
 }

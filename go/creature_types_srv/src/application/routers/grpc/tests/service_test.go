@@ -11,9 +11,9 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/controllers/test/mocks"
-	gen "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/infrastructure/routers/grpc/gen"
-	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/infrastructure/routers/grpc/services"
+	gen "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/grpc/gen"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/grpc/services"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/use_cases/data_access/mocks"
 )
 
 func TestGetCreatureTypes_GRPCCall(t *testing.T) {
@@ -24,11 +24,11 @@ func TestGetCreatureTypes_GRPCCall(t *testing.T) {
 	grpcServer := grpc.NewServer()
 	defer grpcServer.Stop()
 
-	controller := mocks.NewCreatureTypesValid()
-	assert.NotNil(t, controller)
-	expectedData, err := controller.Get(context.Background())
+	dataHandler := mocks.New()
+	assert.NotNil(t, dataHandler)
+	expectedData, err := dataHandler.GetCreatureTypes(context.Background())
 	assert.NoError(t, err)
-	services.Run(grpcServer, controller)
+	services.Run(grpcServer, dataHandler)
 	go func() {
 		err := grpcServer.Serve(listener)
 		if err != nil {

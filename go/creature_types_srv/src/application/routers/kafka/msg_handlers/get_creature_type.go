@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
-	icontrollers "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/controllers/interfaces"
-	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/infrastructure/routers/kafka/utils"
+	"github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/application/routers/kafka/utils"
 	logger "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/logger/zap"
 	settings "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/settings/loader/interfaces"
+	dbinterfaces "github.com/vlsa0880/dnd_encounter_generator/go/creature_types_srv/src/use_cases/interfaces"
 	"go.uber.org/zap"
 )
 
@@ -27,20 +27,20 @@ type config struct {
 }
 
 type GetCreatureTypeMsgHandler struct {
-	config     config
-	controller icontrollers.CreatureTypes
-	producer   *kafka.Producer
+	config        config
+	creatureTypes dbinterfaces.CreatureTypesRepository
+	producer      *kafka.Producer
 }
 
-func NewCreatureTypeHandler(settingsLoader settings.SettingsLoader, controller icontrollers.CreatureTypes) (*GetCreatureTypeMsgHandler, error) {
-	if controller == nil {
-		return nil, fmt.Errorf("bad controller")
+func NewCreatureTypeHandler(settingsLoader settings.SettingsLoader, creatureTypes dbinterfaces.CreatureTypesRepository) (*GetCreatureTypeMsgHandler, error) {
+	if creatureTypes == nil {
+		return nil, fmt.Errorf("bad data handler")
 	} else if settingsLoader == nil {
 		return nil, fmt.Errorf("bad settings loader")
 	}
 
 	var handler GetCreatureTypeMsgHandler
-	handler.controller = controller
+	handler.creatureTypes = creatureTypes
 
 	if err := settingsLoader.Load(&handler.config); err != nil {
 		return nil, fmt.Errorf("can't load handler config: %w", err)
@@ -71,7 +71,7 @@ func (handler *GetCreatureTypeMsgHandler) Handle(ctx context.Context, msg *kafka
 	handleCtx, cancel := context.WithTimeout(ctx, handler.config.Kafka.Handle.Timeout)
 	defer cancel()
 
-	types, err := handler.controller.Get(handleCtx)
+	types, err := handler.creatureTypes.GetCreatureTypes(handleCtx)
 	if err != nil {
 		return fmt.Errorf("can't get creature types: %w", err)
 	}
